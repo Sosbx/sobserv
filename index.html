@@ -162,7 +162,7 @@
                 margin-top: 0;
             }
             #reportText {
-                height: calc(100vh - 20px); /* Modifié pour augmenter la hauteur */
+                height: calc(100vh - 20px);
             }
             .buttons-container {
                 flex-direction: column;
@@ -428,6 +428,11 @@
             copyButton.classList.remove('copied');
             copyButton.textContent = 'Copier le rapport';
             updateReport();
+            
+            // Nouvelle fonctionnalité : rétracter toutes les catégories déployées
+            document.querySelectorAll('.category.open').forEach(category => {
+                category.classList.remove('open');
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -446,5 +451,4 @@
             });
         });
     </script>
-</body>
-</html>
+</body
