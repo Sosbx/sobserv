@@ -138,6 +138,12 @@
         #resetButton:hover {
             background-color: #616161;
         }
+        .title {
+            text-align: center;
+            font-size: 2.5em;
+            color: var(--indigo-800);
+            margin: 20px 0;
+        }
 
         @media (min-width: 1024px) {
             .container {
@@ -156,7 +162,7 @@
                 margin-top: 0;
             }
             #reportText {
-                height: calc(100vh - 20px); /* Modifié pour doubler la hauteur */
+                height: calc(100vh - 20px); /* Modifié pour augmenter la hauteur */
             }
             .buttons-container {
                 flex-direction: column;
@@ -168,6 +174,7 @@
     </style>
 </head>
 <body>
+    <h1 class="title">SObserv</h1>
     <div class="container">
         <div class="categories-container" id="categories"></div>
         <div class="report-section">
