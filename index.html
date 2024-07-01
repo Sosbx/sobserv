@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de compte rendu médical</title>
+    <style>
+        :root {
+            --indigo-50: #e8eaf6;
+            --indigo-100: #c5cae9;
+            --indigo-200: #9fa8da;
+            --indigo-300: #7986cb;
+            --indigo-400: #5c6bc0;
+            --indigo-500: #3f51b5;
+            --indigo-600: #3949ab;
+            --indigo-700: #303f9f;
+            --indigo-800: #283593;
+            --indigo-900: #1a237e;
+            --green-600: #4caf50;
+        }
+        body, html {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: var(--indigo-900);
+            background-color: var(--indigo-50);
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .categories-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+        .report-section {
+            margin-top: 20px;
+        }
+        .category {
+            background-color: white;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid var(--indigo-200);
+            overflow: hidden;
+        }
+        .category-title {
+            background-color: var(--indigo-100);
+            color: var(--indigo-800);
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .category-title:hover {
+            background-color: var(--indigo-200);
+        }
+        .category-content {
+            padding: 16px;
+            display: none;
+        }
+        .category.open .category-content {
+            display: block;
+        }
+        .category-title::after {
+            content: '▼';
+            font-size: 0.8em;
+            transition: transform 0.3s ease;
+        }
+        .category.open .category-title::after {
+            transform: rotate(180deg);
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--indigo-800);
+            transition: color 0.3s;
+        }
+        label:hover {
+            color: var(--indigo-500);
+        }
+        input[type="checkbox"] {
+            margin-right: 10px;
+            accent-color: var(--indigo-600);
+        }
+        .category-title input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+        #reportText {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--indigo-300);
+            font-family: inherit;
+            font-size: 14px;
+            resize: none;
+            background-color: white;
+            color: var(--indigo-900);
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+        .buttons-container {
+            display: flex;
+            justify-content: space-between;
+        }
+        button {
+            padding: 12px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            flex: 1;
+            margin: 0 5px;
+        }
+        #copyButton {
+            background-color: var(--indigo-600);
+        }
+        #copyButton:hover {
+            background-color: var(--indigo-700);
+        }
+        #copyButton.copied {
+            background-color: var(--green-600);
+        }
+        #resetButton {
+            background-color: #757575;
+        }
+        #resetButton:hover {
+            background-color: #616161;
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                flex-direction: row;
+            }
+            .categories-container {
+                flex: 1;
+                margin-right: 20px;
+                max-width: calc(100% - 320px);
+            }
+            .report-section {
+                width: 300px;
+                position: sticky;
+                top: 20px;
+                align-self: flex-start;
+                margin-top: 0;
+            }
+            #reportText {
+                height: calc(100vh - 20px); /* Modifié pour doubler la hauteur */
+            }
+            .buttons-container {
+                flex-direction: column;
+            }
+            button {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="categories-container" id="categories"></div>
+        <div class="report-section">
+            <textarea id="reportText" readonly placeholder="Le texte généré apparaîtra ici au fur et à mesure que vous cochez les cases"></textarea>
+            <div class="buttons-container">
+                <button id="copyButton" onclick="copyReport()">Copier le rapport</button>
+                <button id="resetButton" onclick="resetAll()">Réinitialiser</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const categories = [
+            { 
+                id: 1, 
+                name: 'Examen général', 
+                symptoms: [
+                    'Bon état général',
+                    'GSC 15',
+                    'Constantes normales',
+                    'Pas de signe de gravité',
+                    'Pas de signe de déshydratation',
+                    'Tonique, joue, sourit'
+                ]
+            },
+            { 
+                id: 2, 
+                name: 'Cardio', 
+                symptoms: [
+                    'Pas de douleur thoracique',
+                    'Bruits du cœur réguliers',
+                    'Pas de signes d\'insuffisance cardiaque droite',
+                    'Pas de signes d\'insuffisance cardiaque gauche',
+                    'Pas de souffle',
+                    'Pouls perçus',
+                    'ECG = RSR, Pas de trouble de repo. ni de cond.'
+                ]
+            },
+            {
+                id: 3,
+                name: 'Pneumo',
+                symptoms: [
+                    'Eupnéique',
+                    'MV +/+',
+                    'Pas de toux',
+                    'Pas de crépitants',
+                    'Pas de sibilants',
+                    'Pas d\'expectoration',
+                    'Pas d\'hémoptysie'
+                ]
+            },
+            {
+                id: 4,
+                name: 'Neuro',
+                symptoms: [
+                    'RPM symétriques et consensuels',
+                    'Paires crâniennes normales',
+                    'Pas de déficit sensitif',
+                    'Pas de déficit moteur',
+                    'Pas de syndrome méningé',
+                    'Pas de syndrome cérébelleux',
+                    'Pas de syndrome vestibulaire',
+                    'ROT +/+'
+                ]
+            },
+            {
+                id: 5,
+                name: 'Abdo',
+                symptoms: [
+                    'Abdomen souple dépressible indolore',
+                    'Pas de défense',
+                    'Pas de contracture',
+                    'Pas de méléna',
+                    'Pas d\'hématémèse',
+                    'Orifices herniaires libres',
+                    'Pas de vomissements',
+                    'Pas de trouble du transit'
+                ]
+            },
+            {
+                id: 6,
+                name: 'Uro',
+                symptoms: [
+                    'Pas de brûlure mictionnelle',
+                    'Pas de pollakiurie',
+                    'Pas d\'hématurie',
+                    'Fosse lombaire libre'
+                ]
+            },
+            {
+                id: 7,
+                name: 'Gyneco',
+                symptoms: [
+                    'Pas de méno-métrorragie',
+                    'Pas de leucorrhée',
+                    'Pas de grossesse en cours'
+                ]
+            },
+            {
+                id: 8,
+                name: 'Traumato',
+                symptoms: [
+                    'Marche sans aide',
+                    'Pas de plaie',
+                    'Pas d\'hématome',
+                    'Pas de déformation',
+                    'Pas d\'impotence fonctionnelle'
+                ]
+            },
+            {
+                id: 9,
+                name: 'Psy',
+                symptoms: [
+                    'Pas d\'idées noires',
+                    'Pas de délire',
+                    'Pas d\'agitation',
+                    'Risque suicidaire faible'
+                ]
+            },
+            {
+                id: 10,
+                name: 'ORL',
+                symptoms: [
+                    'Pas d\'angine',
+                    'Pas d\'ADP',
+                    'Pas d\'OMA',
+                    'Tympans vus non perforés'
+                ]
+            },
+            {
+                id: 11,
+                name: 'Cutané',
+                symptoms: [
+                    'Pas de purpura',
+                    'Pas de prurit',
+                    'Pas d\'exanthème',
+                    'Pas d\'énanthème'
+                ]
+            }
+        ];
+
+        function generateCategoryHTML(category) {
+            return `
+                <div class="category" id="category-${category.id}">
+                    <div class="category-title" onclick="toggleCategory(${category.id})">
+                        <input type="checkbox" onclick="event.stopPropagation()" onchange="toggleAllSymptoms(${category.id}, this.checked)">
+                        ${category.name}
+                    </div>
+                    <div class="category-content">
+                        ${category.symptoms.map(symptom => `
+                            <label>
+                                <input type="checkbox" name="${category.id}-${symptom}" onchange="updateReport()">
+                                ${symptom}
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleCategory(categoryId) {
+            const category = document.getElementById(`category-${categoryId}`);
+            category.classList.toggle('open');
+        }
+
+        function toggleAllSymptoms(categoryId, checked) {
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                category.symptoms.forEach(symptom => {
+                    const checkbox = document.querySelector(`input[name="${categoryId}-${symptom}"]`);
+                    if (checkbox) {
+                        checkbox.checked = checked;
+                    }
+                });
+                updateReport();
+            }
+        }
+
+        function updateReport() {
+            let report = "";
+            categories.forEach(category => {
+                const categorySymptoms = category.symptoms.filter(symptom => {
+                    const checkbox = document.querySelector(`input[name="${category.id}-${symptom}"]`);
+                    return checkbox && checkbox.checked;
+                });
+                if (categorySymptoms.length > 0) {
+                    report += `${category.name}:\n`;
+                    categorySymptoms.forEach(symptom => {
+                        report += `- ${symptom}\n`;
+                    });
+                    report += '\n';
+                }
+            });
+            const reportTextArea = document.getElementById('reportText');
+            reportTextArea.value = report.trim();
+            adjustTextareaHeight(reportTextArea);
+        }
+
+        function adjustTextareaHeight(element) {
+            element.style.height = 'auto';
+            element.style.height = (element.scrollHeight) + 'px';
+        }
+
+        function copyReport() {
+            const report = document.getElementById('reportText').value;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(report).then(() => {
+                    updateCopyButtonState();
+                }).catch(err => {
+                    console.error('Erreur lors de la copie : ', err);
+                    fallbackCopyTextToClipboard(report);
+                });
+            } else {
+                fallbackCopyTextToClipboard(report);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                updateCopyButtonState();
+            } catch (err) {
+                console.error('Erreur lors de la copie : ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function updateCopyButtonState() {
+            const copyButton = document.getElementById('copyButton');
+            copyButton.classList.add('copied');
+            copyButton.textContent = 'Copié !';
+            setTimeout(() => {
+                copyButton.classList.remove('copied');
+                copyButton.textContent = 'Copier le rapport';
+            }, 2000);
+        }
+
+        function resetAll() {
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            document.getElementById('reportText').value = '';
+            const copyButton = document.getElementById('copyButton');
+            copyButton.classList.remove('copied');
+            copyButton.textContent = 'Copier le rapport';
+            updateReport();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const categoriesContainer = document.getElementById('categories');
+            if (categoriesContainer) {
+                categoriesContainer.innerHTML = categories.map(generateCategoryHTML).join('');
+            }
+            const reportTextArea = document.getElementById('reportText');
+            reportTextArea.addEventListener('input', function() {
+                adjustTextareaHeight(this);
+            });
+            adjustTextareaHeight(reportTextArea);
+            
+            window.addEventListener('resize', function() {
+                adjustTextareaHeight(reportTextArea);
+            });
+        });
+    </script>
+</body>
+</html>
