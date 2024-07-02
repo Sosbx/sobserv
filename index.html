@@ -431,6 +431,10 @@
             copyButton.classList.remove('copied');
             copyButton.textContent = 'Copier le rapport';
             updateReport();
+
+            document.querySelectorAll('.category.open').forEach(category => {
+                category.classList.remove('open');
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
