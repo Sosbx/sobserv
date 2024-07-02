@@ -206,11 +206,12 @@
                 symptoms: [
                     'Pas de douleur thoracique',
                     'Bruits du cœur réguliers',
-                    'Pas de signes d\'insuffisance cardiaque droite',
-                    'Pas de signes d\'insuffisance cardiaque gauche',
+                    'Pas de signe d\'insuffisance cardiaque droite',
+                    'Pas de signe d\'insuffisance cardiaque gauche',
                     'Pas de souffle',
                     'Pouls perçus',
-                    'ECG = RSR, Pas de trouble de repo. ni de cond.'
+                    'ECG = RSR, Pas de trouble de repo. ni de cond.',
+                    'ECG comparable au tracé de référence'
                 ]
             },
             {
@@ -270,7 +271,7 @@
                 symptoms: [
                     'Pas de méno-métrorragie',
                     'Pas de leucorrhée',
-                    'Pas de grossesse en cours'
+                    'Pas de grossesse en cours déclarée'  // Modifié ici
                 ]
             },
             {
@@ -301,7 +302,9 @@
                     'Pas d\'angine',
                     'Pas d\'ADP',
                     'Pas d\'OMA',
-                    'Tympans vus non perforés'
+                    'Tympans vus non perforés',
+                    'Streptatest positif',  // Ajouté ici
+                    'Streptatest négatif'   // Ajouté ici
                 ]
             },
             {
@@ -428,11 +431,6 @@
             copyButton.classList.remove('copied');
             copyButton.textContent = 'Copier le rapport';
             updateReport();
-            
-            // Nouvelle fonctionnalité : rétracter toutes les catégories déployées
-            document.querySelectorAll('.category.open').forEach(category => {
-                category.classList.remove('open');
-            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -451,4 +449,5 @@
             });
         });
     </script>
-</body
+</body>
+</html>
