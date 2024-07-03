@@ -1,0 +1,296 @@
+:root {
+    --indigo-50: #e8eaf6;
+    --indigo-100: #c5cae9;
+    --indigo-200: #9fa8da;
+    --indigo-300: #7986cb;
+    --indigo-400: #5c6bc0;
+    --indigo-500: #3f51b5;
+    --indigo-600: #3949ab;
+    --indigo-700: #303f9f;
+    --indigo-800: #283593;
+    --indigo-900: #1a237e;
+    --green-600: #4caf50;
+}
+
+body, html {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    color: var(--indigo-900);
+    background-color: var(--indigo-50);
+}
+
+.title {
+    text-align: center;
+    font-size: 2.5em;
+    color: var(--indigo-800);
+    margin: 20px 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    min-height: calc(100vh - 100px); /* Ajusté pour tenir compte du titre */
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.left-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-right: 20px;
+    max-width: calc(100% - 320px);
+}
+
+/* ... Gardez les styles précédents inchangés ... */
+
+.tab-bar {
+    display: flex;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--indigo-200);
+    width: 100%;
+}
+
+.tab-button {
+    flex: 1;
+    background-color: var(--indigo-100);
+    border: none;
+    padding: 10px 0;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s, color 0.3s;
+    text-align: center;
+}
+
+.tab-button:first-child {
+    border-top-left-radius: 5px;
+}
+
+.tab-button:last-child {
+    border-top-right-radius: 5px;
+}
+
+.tab-button:not(:last-child) {
+    border-right: 1px solid var(--indigo-200);
+}
+
+/* ... Le reste des styles reste inchangé ... */
+
+.tab-button:hover {
+    background-color: var(--indigo-200);
+}
+
+.tab-button.active {
+    background-color: var(--indigo-500);
+    color: white;
+}
+
+.categories-container {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.category {
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 1px solid var(--indigo-200);
+    overflow: hidden;
+}
+
+.category-title {
+    background-color: var(--indigo-100);
+    color: var(--indigo-800);
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.category-title:hover {
+    background-color: var(--indigo-200);
+}
+
+.category-content {
+    padding: 16px;
+    display: none;
+}
+
+.category.open .category-content {
+    display: block;
+}
+
+.category-title::after {
+    content: '▼';
+    font-size: 0.8em;
+    transition: transform 0.3s ease;
+}
+
+.category.open .category-title::after {
+    transform: rotate(180deg);
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--indigo-800);
+    transition: color 0.3s;
+}
+
+label:hover {
+    color: var(--indigo-500);
+}
+
+input[type="checkbox"] {
+    margin-right: 10px;
+    accent-color: var(--indigo-600);
+}
+
+.category-title input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+}
+
+.report-section {
+    width: 300px;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+}
+
+#reportText {
+    width: 100%;
+    height: calc(100vh - 140px);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--indigo-300);
+    font-family: inherit;
+    font-size: 14px;
+    resize: none;
+    background-color: white;
+    color: var(--indigo-900);
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+.buttons-container {
+    display: flex;
+    flex-direction: column;
+}
+
+button {
+    padding: 12px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin: 5px 0;
+}
+
+#copyButton {
+    background-color: var(--indigo-600);
+}
+
+#copyButton:hover {
+    background-color: var(--indigo-700);
+}
+
+#copyButton.copied {
+    background-color: var(--green-600);
+}
+
+#resetButton {
+    background-color: #757575;
+}
+
+#resetButton:hover {
+    background-color: #616161;
+}
+
+@media (max-width: 1023px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .left-column {
+        max-width: 100%;
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+
+    .report-section {
+        width: 100%;
+        position: static;
+    }
+
+    #reportText {
+        height: 200px;
+    }
+
+    .buttons-container {
+        flex-direction: row;
+    }
+
+    button {
+        flex: 1;
+        margin: 5px;
+    }
+}
+/* Ajoutez ces styles à votre fichier CSS existant */
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.favorites-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    padding: 10px;
+}
+
+
+.favorite-btn {
+    background-color: var(--indigo-600);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s;
+    text-align: center;
+}
+
+.favorite-btn:hover {
+    background-color: var(--indigo-700);
+}
+
+.favorite-btn:active {
+    background-color: var(--indigo-800);
+    transform: scale(0.98);
+}
+.favorite-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--indigo-200);
+}
+.favorites-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 15px;
+}
+
+/* Assurez-vous que ces styles sont compatibles avec votre design existant */
