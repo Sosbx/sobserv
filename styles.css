@@ -293,4 +293,25 @@ button {
     padding: 15px;
 }
 
+.favorite-btn[data-favorite="deces"] {
+    background-color: #424242; /* Un gris très foncé */
+    color: white;
+    border: 1px solid #212121; /* Une bordure encore plus foncée */
+}
+
+.favorite-btn[data-favorite="deces"]:hover {
+    background-color: #212121; /* Presque noir au survol */
+}
+
+.favorite-btn[data-favorite="deces"]:active {
+    background-color: #000000; /* Noir complet quand on clique */
+    color: #e0e0e0; /* Légèrement grisé pour montrer l'activation */
+}
+
+/* Optionnel : ajoutez un style focus distinct pour le bouton Décès */
+.favorite-btn[data-favorite="deces"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); /* Un halo blanc subtil */
+}
+
 /* Assurez-vous que ces styles sont compatibles avec votre design existant */

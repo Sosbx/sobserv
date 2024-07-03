@@ -392,7 +392,12 @@ ORL:
             reportText = "En cours de developpement";
             break;
         case 'deces':
-            reportText = "En cours de developpement";
+            reportText = `- Identité du patient verifiée
+- Absence de ventilation spontanée
+- Pupilles en mydriase et aréactives
+- Bdc inaudibles
+- Pas de pouls
+- Rigidité cadavérique `;
             break;
         case 'gastro':
             reportText = "En cours de developpement";
