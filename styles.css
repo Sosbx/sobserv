@@ -10,6 +10,7 @@
     --indigo-800: #283593;
     --indigo-900: #1a237e;
     --green-600: #4caf50;
+    --sos-blue-light: #3366cc;
 }
 
 body, html {
@@ -258,9 +259,13 @@ button {
 
 .favorites-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Augmenté de 150px à 180px */
-    gap: 18px; /* Augmenté de 15px à 18px pour maintenir les proportions */
-    padding: 18px; /* Augmenté de 15px à 18px */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 18px;
+    padding: 18px;
+}
+.favorite-btn, .dropdown {
+    width: 100%;
+    height: 100%;
 }
 
 
@@ -319,14 +324,80 @@ button {
 }
 @media (max-width: 768px) {
     .favorites-buttons {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Colonnes plus étroites */
-        gap: 9px; /* Espace réduit de moitié */
-        padding: 9px; /* Padding réduit de moitié */
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 9px;
+        padding: 9px;
     }
 
-    .favorite-btn {
-        font-size: 14px; /* Taille de police réduite */
-        padding: 10px; /* Padding réduit */
+    .favorite-btn, .dropdown-btn {
+        font-size: 14px;
+        padding: 10px;
     }
 }
-/* Assurez-vous que ces styles sont compatibles avec votre design existant */
+/* Ajoutez ces styles à votre fichier CSS existant */
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-btn {
+    background-color: var(--sos-blue-light);
+    width: 100%;
+    text-align: center;
+    padding-right: 20px; /* Espace pour la flèche */
+}
+
+.dropdown-btn::after {
+    content: ' ▼';
+    font-size: 0.9em;
+    position: absolute;
+    right: 10px;
+    top: 60%;
+    transform: translateY(-50%);
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--sos-white);
+    min-width: 100%;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 5px;
+    top: 100%; /* Positionne le menu juste en dessous du bouton */
+    left: 0;
+}
+
+.dropdown-content button {
+    color: var(--sos-dark-gray);
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+
+.dropdown-content button:hover {
+    background-color: var(--sos-light-blue);
+    color: var(--sos-white);
+}
+
+.dropdown:hover .dropdown-content,
+.dropdown-content:hover {
+    display: block;
+}
+
+/* Ajoutez ceci pour créer une zone tampon */
+.dropdown::after {
+    content: '';
+    position: absolute;
+    height: 20px; /* Ajustez cette valeur selon vos besoins */
+    width: 100%;
+    bottom: -20px;
+    left: 0;
+}
+

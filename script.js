@@ -255,13 +255,12 @@ function resetAll() {
 // Le reste du code reste inchangé jusqu'à la fonction resetAll()
 
 // Remplacez la partie du code commençant par document.addEventListener par ce qui suit :
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-});
+document.addEventListener('DOMContentLoaded', function() {initializeApp();});
 
 function initializeApp() {
     initializeTabs();
     initializeFavoriteButtons();
+    initializeDropdowns(); // Ajoutez cette ligne
     const categoriesContainer = document.getElementById('categories');
     if (categoriesContainer) {
         categoriesContainer.innerHTML = categories.map(generateCategoryHTML).join('');
@@ -283,6 +282,7 @@ function initializeApp() {
         }
     });
 }
+
 function initializeTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
     tabButtons.forEach(button => {
@@ -344,6 +344,26 @@ function initializeFavoriteButtons() {
     });
 }
 
+
+function initializeDropdowns() {
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    const dropdownContent = document.querySelector('.dropdown-content');
+
+    if (dropdownBtn && dropdownContent) {
+        dropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            dropdownContent.style.display = dropdownContent.style.display === 'block' ? 'none' : 'block';
+        });
+
+        document.addEventListener('click', function() {
+            dropdownContent.style.display = 'none';
+        });
+
+        dropdownContent.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+}
 
 function generateFavoriteReport(favoriteType) {
     let reportText;
@@ -456,6 +476,103 @@ Examen clinique :
 - Pas de sd méningé
 - Pas d'autre point d'appel infectieux retrouvé`;
             break;
+            case 'colique-nephretique':
+                reportText = `Colique néphrétique :
+    - Douleur lombaire unilatérale brutale
+    - Irradiation vers les organes génitaux externes
+    - Agitation
+    - Nausées, vomissements
+    
+    Examen clinique :
+    - Bon état général
+    - Douleur à la palpation de la fosse lombaire
+    - Absence de fièvre
+    - Bandelette urinaire : hématurie`;
+                break;
+    
+            case 'migraine':
+                reportText = `Migraine :
+    - Céphalées unilatérales pulsatiles
+    - Photophobie, phonophobie
+    - Nausées, vomissements
+    
+    Examen clinique :
+    - Bon état général
+    - Examen neurologique normal
+    - Pas de signe de gravité`;
+                break;
+
+                case 'depression':
+                    reportText = `Dépression :
+        - Humeur triste
+        - Anhédonie
+        - Troubles du sommeil
+        - Perte d'appétit
+        - Fatigue
+        - Difficultés de concentration
+        
+        Examen clinique :
+        - Patient conscient, orienté
+        - Ralentissement psychomoteur
+        - Pas d'idées suicidaires exprimées
+        - Pas de délire ni d'hallucinations
+        - Pas de risque de passage à l'acte immédiat`;
+                    break;
+
+                    case 'entorse-cheville':
+                        reportText = `Entorse de cheville :
+            - Traumatisme en torsion
+            - Douleur et œdème de la malléole 
+            
+            Examen clinique :
+            - Marche difficile, mais fait 4 pas
+            - Œdème et ecchymose malléolaire
+            - Douleur à la palpation des faisceaux ligamentaires
+            - Pas de douleur à la palpation de la base du 5ème métatarsien
+            - Pas de douleur à la palpation médio-pied
+            - Pas de douleur à la palpation du genou`;
+                        break;
+            
+                    case 'entorse-genou':
+                        reportText = `Entorse de genou :
+            - Traumatisme en torsion / Hyperextension
+            - Douleur et gonflement du genou
+            
+            Examen clinique :
+            - Impotence fonctionnelle partielle
+            - Limitation des amplitudes articulaires
+            - Epanchement articulaire
+            - Douleur à la palpation des ligaments latéraux
+            - Genou difficilement examinable ce jour`;
+                        break;
+            
+                    case 'entorse-poignet':
+                        reportText = `Entorse de poignet :
+            - Traumatisme en hyperextension / flexion forcée
+            - Douleur et oedeme du poignet
+            
+            Examen clinique :
+            - Mobilisation du poignet douloureuse
+            - Impotence fonctionnelle partielle
+            - Œdème localisé
+            - Pas de déformation
+            - Pas de trouble sensitivo-moteur des doigts
+            - Pouls radial présent`;
+                        break;
+            
+                    case 'entorse-doigt':
+                        reportText = `Entorse de doigt :
+            - Traumatisme en hyperextension / déviation latérale
+            - Douleur et oedeme du doigt
+            
+            Examen clinique :
+            - Œdème localisé
+            - Douleur à la mobilisation
+            - Pas de déformation
+            - Stabilité des articulations adjacentes
+            - Pas de trouble sensitivo-moteur du doigt`;
+                        break;
+            
         default:
             reportText = "Texte non défini pour ce favori.";
     }
