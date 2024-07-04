@@ -441,6 +441,21 @@ Tympan:
 - Léri neg
 - Pouls percus et symétriques`;
             break;
+            case 'syndrome-grippal':
+            reportText = `- Fièvre
+- Frissons
+- Asthénie
+- Myalgies diffuses
+- Céphalées
+- Toux sèche
+
+Examen clinique :
+- Bon état général
+- Pas de signe de gravité
+- Auscultation claire, pas de foyer
+- Pas de sd méningé
+- Pas d'autre point d'appel infectieux retrouvé`;
+            break;
         default:
             reportText = "Texte non défini pour ce favori.";
     }
