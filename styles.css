@@ -166,13 +166,15 @@ input[type="checkbox"] {
 
 #reportText {
     width: 100%;
-    height: calc(100vh - 140px);
+    min-height: 250px; /* Augmenté pour une taille initiale plus grande */
+    height: calc(100vh - 200px); /* Ajusté pour prendre plus d'espace vertical */
     padding: 15px;
     border-radius: 8px;
     border: 1px solid var(--indigo-300);
     font-family: inherit;
-    font-size: 14px;
-    resize: none;
+    font-size: 14px; /* Augmenté pour une meilleure lisibilité */
+    line-height: 1.2; /* Ajouté pour améliorer l'espacement des lignes */
+    resize: vertical; /* Permet à l'utilisateur de redimensionner verticalement si nécessaire */
     background-color: white;
     color: var(--indigo-900);
     box-sizing: border-box;
@@ -256,9 +258,9 @@ button {
 
 .favorites-buttons {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Augmenté de 150px à 180px */
+    gap: 18px; /* Augmenté de 15px à 18px pour maintenir les proportions */
+    padding: 18px; /* Augmenté de 15px à 18px */
 }
 
 
@@ -266,9 +268,9 @@ button {
     background-color: var(--indigo-600);
     color: white;
     border: none;
-    border-radius: 5px;
-    padding: 10px;
-    font-size: 14px;
+    border-radius: 6px; /* Légèrement augmenté pour correspondre à la nouvelle taille */
+    padding: 12px; /* Augmenté de 10px à 12px */
+    font-size: 16.8px; /* Augmenté de 14px à 16.8px (20% de plus) */
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s;
     text-align: center;

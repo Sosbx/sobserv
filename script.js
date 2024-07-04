@@ -42,6 +42,7 @@ const categories = [
         id: 4,
         name: 'Neuro',
         symptoms: [
+            'Pas de trouble du comportement',
             'RPM symétriques et consensuels',
             'Paires crâniennes normales',
             'Pas de déficit sensitif',
@@ -73,7 +74,8 @@ const categories = [
             'Pas de brûlure mictionnelle',
             'Pas de pollakiurie',
             'Pas d\'hématurie',
-            'Fosse lombaire libre'
+            'Fosse lombaire libre',
+            'Pas de globe'
         ]
     },
     {
@@ -81,6 +83,7 @@ const categories = [
         name: 'Gyneco',
         symptoms: [
             'Pas de méno-métrorragie',
+            'Règles régulières et d\'abondance normale',
             'Pas de leucorrhée',
             'Pas de grossesse en cours déclarée'
         ]
@@ -93,6 +96,7 @@ const categories = [
             'Pas de plaie',
             'Pas d\'hématome',
             'Pas de déformation',
+            'Pas de douleur à la palpation des articulations adjacentes',
             'Pas d\'impotence fonctionnelle'
         ]
     },
@@ -400,7 +404,15 @@ ORL:
 - Rigidité cadavérique `;
             break;
         case 'gastro':
-            reportText = "En cours de developpement";
+            reportText = `Diarrhée, nausée, vomissements
+Examen général:
+- Bon état général
+- Pas de signe de déshydratation
+
+Abdo:
+- Abdomen souple dépressible indolore
+- Pas de défense
+- Pas de contracture`;
             break;
         case 'oma-d':
             reportText = "En cours de developpement";
