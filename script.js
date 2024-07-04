@@ -375,25 +375,36 @@ ORL:
 - Pas d'OMA`;
             break;
         case 'angine-strepta-plus':
-            reportText = `
-- Bon état général
-- Pas de signe de gravité
-- Amygdalite bilatérale 
-- ADP douloureuse
-- Pas de phlegmon
-- Streptatest positif.`;
+            reportText = `- Mal de gorge
+- Dysphagie
+- Fièvre
+- Adénopathies cervicales sensibles
+Examen de la gorge :
+- Amygdales hypertrophiées
+- Érythème pharyngé
+- Exsudat blanchâtre sur les amygdales
+
+Streptatest : Positif`;
             break;
         case 'angine-strepta-minus':
-            reportText = `
-- Bon état général
-- Pas de signe de gravité
-- Amygdalite bilatérale 
-- ADP douloureuse
-- Pas de phlegmon
-- Streptatest negatif.` ;
+            reportText = `- Mal de gorge
+- Dysphagie
+- Fièvre
+- Adénopathies cervicales sensibles
+Examen de la gorge :
+- Amygdales hypertrophiées
+- Érythème pharyngé
+- Exsudat blanchâtre sur les amygdales
+
+Streptatest : Négatif` ;
             break;
         case 'cystite':
-            reportText = "En cours de developpement";
+            reportText = `- Brûlure mictionnelle
+- Pollakiurie
+- Hématurie
+- Apyrétique
+- Fosse lombaire libre
+- Pas de globe`;
             break;
         case 'deces':
             reportText = `- Identité du patient verifiée
@@ -405,23 +416,30 @@ ORL:
             break;
         case 'gastro':
             reportText = `Diarrhée, nausée, vomissements
+
 Examen général:
 - Bon état général
 - Pas de signe de déshydratation
-
 Abdo:
-- Abdomen souple dépressible indolore
+- Abdomen souple dépressible, sensible dans son ensemble
 - Pas de défense
 - Pas de contracture`;
             break;
-        case 'oma-d':
-            reportText = "En cours de developpement";
-            break;
-        case 'oma-g':
-            reportText = "En cours de developpement";
+        case 'oma':
+            reportText = `Otalgie
+Tympan:
+- Congestif
+- Inflammatoire
+- Perte de transparence 
+- Collecté`;
             break;
         case 'lumbago':
-            reportText = "En cours de developpement";
+            reportText = `Douleur lombaire d'apparition brutale,
+- Marche sans aide
+- Pas d'irradiation dans les membres inferieurs
+- Lasègue neg
+- Léri neg
+- Pouls percus et symétriques`;
             break;
         default:
             reportText = "Texte non défini pour ce favori.";

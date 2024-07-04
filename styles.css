@@ -274,6 +274,8 @@ button {
     cursor: pointer;
     transition: background-color 0.3s, transform 0.1s;
     text-align: center;
+    font-size: 16.8px; /* Taille de police augmentée de 20% */
+    padding: 12px;
 }
 
 .favorite-btn:hover {
@@ -315,5 +317,16 @@ button {
     outline: none;
     box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5); /* Un halo blanc subtil */
 }
+@media (max-width: 768px) {
+    .favorites-buttons {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Colonnes plus étroites */
+        gap: 9px; /* Espace réduit de moitié */
+        padding: 9px; /* Padding réduit de moitié */
+    }
 
+    .favorite-btn {
+        font-size: 14px; /* Taille de police réduite */
+        padding: 10px; /* Padding réduit */
+    }
+}
 /* Assurez-vous que ces styles sont compatibles avec votre design existant */
