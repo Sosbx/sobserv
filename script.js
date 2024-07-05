@@ -10,7 +10,8 @@ const CATEGORIES = [
             'Constantes normales',
             'Pas de signe de gravité',
             'Pas de signe de déshydratation',
-            'Tonique, joue, sourit'
+            'Tonique, joue, sourit',
+            'Mange bien, boit bien',
         ]
     },
     { 
@@ -76,7 +77,7 @@ const CATEGORIES = [
             'Pas de brûlure mictionnelle',
             'Pas de pollakiurie',
             'Pas d\'hématurie',
-            'Fosse lombaire libre',
+            'Fosses lombaires libres',
             'Pas de globe'
         ]
     },
@@ -155,11 +156,7 @@ Neuro:
 Abdo:
 - Abdomen souple dépressible indolore
 - Pas de défense
-- Pas de trouble du transit
-ORL:
-- Pas d'angine
-- Pas d'ADP
-- Pas d'OMA`,
+- Pas de trouble du transit`,
     'angine-strepta-plus': `- Mal de gorge
 - Dysphagie
 - Fièvre
@@ -209,10 +206,11 @@ Tympan:
 - Collecté`,
     'lumbago': `Douleur lombaire d'apparition brutale,
 - Marche sans aide
-- Pas d'irradiation dans les membres inferieurs
-- Lasègue neg
-- Léri neg
-- Pouls percus et symétriques`,
+- Contracture des muscles paravertébraux
+- Lasègue négatif 
+- Léri négatif
+- Pas de déficit sensitivo-moteur des membres inférieurs
+- Pouls périphériques perçus et symétriques`,
     'syndrome-grippal': `- Fièvre
 - Frissons
 - Asthénie
@@ -237,6 +235,17 @@ Examen clinique :
 - Douleur à la palpation de la fosse lombaire
 - Absence de fièvre
 - Bandelette urinaire : hématurie`,
+'coqueluche': `Suspicion de coqueluche :
+- Toux persistante
+- Quinteuse, émétisante à prédominance nocturne
+- Reprise inspiratoire bruyante
+
+Examen clinique :
+- État général conservé
+- Apyrexie ou fièvre modérée
+- Auscultation pulmonaire normale
+- Pas de détresse respiratoire`,
+
     'migraine': `Migraine :
 - Céphalées unilatérales pulsatiles
 - Photophobie, phonophobie
@@ -256,7 +265,6 @@ Examen clinique :
 
 Examen clinique :
 - Patient conscient, orienté
-- Ralentissement psychomoteur
 - Pas d'idées suicidaires exprimées
 - Pas de délire ni d'hallucinations
 - Pas de risque de passage à l'acte immédiat`,
@@ -302,6 +310,7 @@ Examen clinique :
 - Pas de déformation
 - Stabilité des articulations adjacentes
 - Pas de trouble sensitivo-moteur du doigt`
+
 };
 
 // DOM Elements
@@ -485,26 +494,44 @@ function initializeFavoriteButtons() {
     });
 }
 
+
 function initializeDropdowns() {
     if (elements.dropdownBtn && elements.dropdownContent) {
         elements.dropdownBtn.addEventListener('click', function(e) {
             e.stopPropagation();
-            elements.dropdownContent.style.display = elements.dropdownContent.style.display === 'block' ? 'none' : 'block';
+            toggleDropdown();
         });
 
         document.addEventListener('click', function() {
-            elements.dropdownContent.style.display = 'none';
+            closeDropdown();
         });
 
         elements.dropdownContent.addEventListener('click', function(e) {
             e.stopPropagation();
         });
+
+        // Ajout d'un gestionnaire d'événements pour les boutons du menu déroulant
+        elements.dropdownContent.querySelectorAll('.favorite-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                generateFavoriteReport(this.dataset.favorite);
+                closeDropdown();
+            });
+        });
     }
+}
+
+function toggleDropdown() {
+    elements.dropdownContent.classList.toggle('show');
+}
+
+function closeDropdown() {
+    elements.dropdownContent.classList.remove('show');
 }
 
 function generateFavoriteReport(favoriteType) {
     elements.reportTextArea.value = FAVORITES[favoriteType] || "Texte non défini pour ce favori.";
     adjustTextareaHeight(elements.reportTextArea);
+    // Le menu se fermera automatiquement grâce au gestionnaire d'événements ajouté dans initializeDropdowns
 }
 
 // Event Listeners

@@ -37,6 +37,7 @@ body, html {
     min-height: calc(100vh - 100px); /* Ajusté pour tenir compte du titre */
     padding: 20px;
     box-sizing: border-box;
+    position: relative;
 }
 
 .left-column {
@@ -44,10 +45,16 @@ body, html {
     display: flex;
     flex-direction: column;
     margin-right: 20px;
-    max-width: calc(100% - 320px);
+    max-width: calc(100% - 340px);
 }
 
-/* ... Gardez les styles précédents inchangés ... */
+.report-section {
+    width: 300px;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+    transition: margin-left 0.3s ease; /* Animation pour le décalage */
+}
 
 .tab-bar {
     display: flex;
@@ -339,7 +346,6 @@ button {
 
 .dropdown {
     position: relative;
-    display: inline-block;
 }
 
 .dropdown-btn {
@@ -361,17 +367,21 @@ button {
 .dropdown-content {
     display: none;
     position: absolute;
-    background-color: var(--sos-white);
-    min-width: 100%;
+    background-color: var(--indigo-50);
+    min-width: 200px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
+    right: -220px; /* Positionne le dropdown à droite du bouton */
+    top: 0;
     border-radius: 5px;
-    top: 100%; /* Positionne le menu juste en dessous du bouton */
-    left: 0;
+}
+
+.dropdown-content.show {
+    display: block;
 }
 
 .dropdown-content button {
-    color: var(--sos-dark-gray);
+    color: var(--indigo-900);
     padding: 12px 16px;
     text-decoration: none;
     display: block;
@@ -383,8 +393,7 @@ button {
 }
 
 .dropdown-content button:hover {
-    background-color: var(--sos-light-blue);
-    color: var(--sos-white);
+    background-color: var(--indigo-100);
 }
 
 .dropdown:hover .dropdown-content,

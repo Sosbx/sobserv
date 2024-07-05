@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -27,6 +26,8 @@
                     <button class="favorite-btn" data-favorite="angine-strepta-plus">Angine Strepta +</button>
                     <button class="favorite-btn" data-favorite="angine-strepta-minus">Angine Strepta -</button>
                     <button class="favorite-btn" data-favorite="colique-nephretique">Clq néphrétique</button>
+                    <button class="favorite-btn" data-favorite="coqueluche">Coqueluche</button>
+
                     <button class="favorite-btn" data-favorite="cystite">Cystite</button>
                     <button class="favorite-btn" data-favorite="deces">Décès</button>
                     <button class="favorite-btn" data-favorite="depression">Dépression</button>
@@ -36,7 +37,7 @@
                     <button class="favorite-btn" data-favorite="oma">OMA</button>
                     <button class="favorite-btn" data-favorite="syndrome-grippal">Sd grippal</button>
                     <div class="dropdown">
-                        <button class="favorite-btn dropdown-btn" data-favorite="Entores">Entorses</button>
+                        <button class="favorite-btn dropdown-btn" data-favorite="Entorses">Entorses</button>
                         <div class="dropdown-content">
                             <button class="favorite-btn" data-favorite="entorse-cheville">Entorse cheville</button>
                             <button class="favorite-btn" data-favorite="entorse-genou">Entorse genou</button>
@@ -44,15 +45,14 @@
                             <button class="favorite-btn" data-favorite="entorse-doigt">Entorse doigt</button>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </div>
         <div class="report-section">
             <textarea id="reportText" readonly placeholder="Le texte généré apparaîtra ici au fur et à mesure que vous cochez les cases"></textarea>
             <div class="buttons-container">
-                <button id="copyButton" onclick="copyReport()">Copier le rapport</button>
-                <button id="resetButton" onclick="resetAll()">Réinitialiser</button>
+                <button id="copyButton">Copier le rapport</button>
+                <button id="resetButton">Réinitialiser</button>
             </div>
         </div>
     </div>
