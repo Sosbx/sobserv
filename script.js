@@ -235,7 +235,14 @@ Examen clinique :
 - Douleur à la palpation de la fosse lombaire
 - Absence de fièvre
 - Bandelette urinaire : hématurie`,
-'coqueluche': `Suspicion de coqueluche :
+
+    'conjonctivite': `- Oeil rouge
+- Prurit
+- Écoulement purulent
+- Larmoiement 
+- Sensation de corps étranger`,
+
+    'coqueluche': `Suspicion de coqueluche :
 - Toux persistante
 - Quinteuse, émétisante à prédominance nocturne
 - Reprise inspiratoire bruyante
@@ -496,8 +503,11 @@ function initializeFavoriteButtons() {
 
 
 function initializeDropdowns() {
-    if (elements.dropdownBtn && elements.dropdownContent) {
-        elements.dropdownBtn.addEventListener('click', function(e) {
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    const dropdownContent = document.querySelector('.dropdown-content');
+
+    if (dropdownBtn && dropdownContent) {
+        dropdownBtn.addEventListener('click', function(e) {
             e.stopPropagation();
             toggleDropdown();
         });
@@ -506,12 +516,12 @@ function initializeDropdowns() {
             closeDropdown();
         });
 
-        elements.dropdownContent.addEventListener('click', function(e) {
+        dropdownContent.addEventListener('click', function(e) {
             e.stopPropagation();
         });
 
         // Ajout d'un gestionnaire d'événements pour les boutons du menu déroulant
-        elements.dropdownContent.querySelectorAll('.favorite-btn').forEach(button => {
+        dropdownContent.querySelectorAll('.favorite-btn').forEach(button => {
             button.addEventListener('click', function() {
                 generateFavoriteReport(this.dataset.favorite);
                 closeDropdown();
@@ -521,12 +531,15 @@ function initializeDropdowns() {
 }
 
 function toggleDropdown() {
-    elements.dropdownContent.classList.toggle('show');
+    const dropdownContent = document.querySelector('.dropdown-content');
+    dropdownContent.classList.toggle('show');
 }
 
 function closeDropdown() {
-    elements.dropdownContent.classList.remove('show');
+    const dropdownContent = document.querySelector('.dropdown-content');
+    dropdownContent.classList.remove('show');
 }
+
 
 function generateFavoriteReport(favoriteType) {
     elements.reportTextArea.value = FAVORITES[favoriteType] || "Texte non défini pour ce favori.";

@@ -278,7 +278,7 @@ button {
 
 
 .favorite-btn {
-    background-color: var(--indigo-600);
+    background-color: var(--indigo-400);
     color: white;
     border: none;
     border-radius: 6px; /* Légèrement augmenté pour correspondre à la nouvelle taille */
@@ -350,10 +350,15 @@ button {
 
 .dropdown-btn {
     background-color: var(--sos-blue-light);
+    color: whitesmoke;
     width: 100%;
     text-align: center;
     padding-right: 20px; /* Espace pour la flèche */
 }
+.dropdown-btn:hover {
+    background-color: #2855ab; /* Une teinte plus foncée de sos-blue-light */
+}
+
 
 .dropdown-btn::after {
     content: ' ▼';
@@ -396,12 +401,10 @@ button {
     background-color: var(--indigo-100);
 }
 
-.dropdown:hover .dropdown-content,
-.dropdown-content:hover {
+.dropdown-content.show {
     display: block;
 }
 
-/* Ajoutez ceci pour créer une zone tampon */
 .dropdown::after {
     content: '';
     position: absolute;
