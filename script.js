@@ -78,7 +78,9 @@ const CATEGORIES = [
             'Pas de pollakiurie',
             'Pas d\'hématurie',
             'Fosses lombaires libres',
-            'Pas de globe'
+            'Pas de globe',
+            'Testicules de taille normale pour l\'âge', 
+            'Testucules plapés'
         ]
     },
     {
@@ -211,6 +213,32 @@ Tympan:
 - Léri négatif
 - Pas de déficit sensitivo-moteur des membres inférieurs
 - Pouls périphériques perçus et symétriques`,
+
+'Sinusite frontale': `- Fièvre/Frissons
+- Myalgies diffuses
+- Céphalées retro orbitaire
+- Céphalées augmentée à la mobilisation de la tête
+
+
+Examen clinique :
+- Bon état général
+- Pas de signe de gravité
+- Auscultation claire, pas de foyer
+- Pas de sd méningé
+- Pas d'autre point d'appel infectieux retrouvé`,
+
+'Sinusite maxillaire': `- Fièvre/Frissons
+- Myalgies diffuses
+- Douleurs retro maxillaire/sous orbitaire
+- Augmentée à la mobilisation de la tête
+
+Examen clinique :
+- Bon état général
+- Pas de signe de gravité
+- Auscultation claire, pas de foyer
+- Pas de sd méningé
+- Pas d'autre point d'appel infectieux retrouvé`,
+
     'syndrome-grippal': `- Fièvre
 - Frissons
 - Asthénie
