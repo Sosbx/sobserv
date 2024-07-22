@@ -80,7 +80,7 @@ const CATEGORIES = [
             'Fosses lombaires libres',
             'Pas de globe',
             'Testicules de taille normale pour l\'âge', 
-            'Testucules plapés'
+            'Testicules plapés'
         ]
     },
     {
