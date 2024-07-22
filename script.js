@@ -288,8 +288,15 @@ Examen clinique :
 
 Examen clinique :
 - Bon état général
-- Examen neurologique normal
-- Pas de signe de gravité`,
+- Migraine similaire aux autres crises
+Examen neuro:
+- Pas de signe de gravité
+- Pas de trouble du comportement
+- RPM symétriques et consensuels
+- Paires crâniennes normales
+- Pas de déficit sensitif
+- Pas de déficit moteur
+- Pas de syndrome méningé`,
     'depression': `Dépression :
 - Humeur triste
 - Anhédonie
