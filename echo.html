@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SObserv - Échographie</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="nav-buttons">
+        <button id="homeButton" class="nav-button">Retour</button>
+    </div>
+    <h1 id="sobserv" class="title">SObserv - Échographie</h1>
+    
+    <div class="container">
+        <div class="left-column">
+            <select id="echoTypeSelect">
+                <option value="renal">Échographie rénale</option>
+                <option value="pleuropulmonaire">Échographie pleuro-pulmonaire</option>
+                <option value="tvp">Écho-Doppler des veines des membres inférieurs</option>
+                <option value="fast">FAST ÉCHO</option>
+            </select>
+            <div id="echo-categories" class="categories-container">
+                <!-- Les catégories seront générées ici par JavaScript -->
+            </div>
+        </div>
+        
+        <div class="report-section">
+            <textarea id="reportText" placeholder="Le rapport d'échographie apparaîtra ici..."></textarea>
+            <div class="buttons-container">
+                <button id="copyButton">Copier le rapport</button>
+                <button id="resetButton">Réinitialiser</button>
+            </div>
+            <div class="additional-buttons">
+                <button id="addImageButton">Ajouter une image</button>
+                <button id="generatePDFButton">Générer PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
