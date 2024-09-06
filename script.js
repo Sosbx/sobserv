@@ -1,4 +1,11 @@
 
+let logoSosmedecins;
+// Chargement du logo
+window.addEventListener('load', function() {
+    logoSosmedecins = new Image();
+    logoSosmedecins.src = 'LogoSosmedecins.png'; // Assurez-vous que le chemin est correct
+});
+
 // Constants
 const CATEGORIES = [
     { 
@@ -355,6 +362,8 @@ Examen clinique :
 
 };
 
+
+
 // DOM Elements
 const elements = {
     categoriesContainer: document.getElementById('categories'),
@@ -499,6 +508,7 @@ function resetAll() {
     });
 }
 
+
 function initializeApp() {
     initializeNavigation();
     
@@ -613,6 +623,7 @@ function generateFavoriteReport(favoriteType) {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener('DOMContentLoaded', initializeEchoPage);
 elements.copyButton.addEventListener('click', copyReport);
 elements.resetButton.addEventListener('click', resetAll);
 
@@ -633,24 +644,220 @@ function initializeNavigation() {
     }
 }
 
-// Ajoutez cet appel à la fin de la fonction initializeApp
-function initializeEchoPage() {
-    const reportText = document.getElementById('reportText');
-    const copyButton = document.getElementById('copyButton');
-    const resetButton = document.getElementById('resetButton');
-    const addImageButton = document.getElementById('addImageButton');
-    const generatePDFButton = document.getElementById('generatePDFButton');
-    const echoTypeSelect = document.getElementById('echoTypeSelect');
-    const echoCategoriesContainer = document.getElementById('echo-categories');
+let uploadedImages = [];
 
+function initializeImageUpload() {
+    const addImageButton = document.getElementById('addImageButton');
+    const fileInput = document.getElementById('imageUpload');
+
+    // Supprimez tout événement existant
+    addImageButton.removeEventListener('click', addImageButtonClickHandler);
+    fileInput.removeEventListener('change', handleFileSelect);
+
+    // Ajoutez les nouveaux écouteurs d'événements
+    addImageButton.addEventListener('click', addImageButtonClickHandler);
+    fileInput.addEventListener('change', handleFileSelect);
+}
+
+function addImageButtonClickHandler(event) {
+    event.preventDefault(); // Empêche le comportement par défaut
+    document.getElementById('imageUpload').click();
+}
+
+function handleFileSelect(event) {
+    const files = event.target.files;
+    for (let i = 0; i < files.length; i++) {
+        uploadedImages.push(files[i]);
+    }
+    updateImagesList();
+    event.target.value = ''; // Réinitialiser l'input file
+}
+function updateImagesList() {
+    const imagesList = document.getElementById('uploadedImagesList');
+    imagesList.innerHTML = '';
+    uploadedImages.forEach((file, index) => {
+        const listItem = document.createElement('div');
+        listItem.className = 'uploaded-image-item';
+        listItem.innerHTML = `
+            <span>${file.name}</span>
+            <button class="remove-image" onclick="removeImage(${index})">×</button>
+        `;
+        imagesList.appendChild(listItem);
+    });
+}
+
+function removeImage(index) {
+    uploadedImages.splice(index, 1);
+    updateImagesList();
+}
+
+function generatePDF(lastName, firstName, birthDate) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const margin = 20;
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const contentWidth = pageWidth - 2 * margin;
+    const columnWidth = contentWidth / 2 - 5;
+
+    function addHeaderAndFooter(pageNum) {
+        if (pageNum > 1) {
+            doc.setFontSize(9);
+            doc.text(`Patient: ${lastName} ${firstName} - Né(e) le: ${birthDate}`, margin, 10);
+            doc.text(`Dr [Nom du médecin]`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+        }
+    }
+
+    function addTextWithOverflow(text, x, y, options = {}) {
+        const lineHeight = options.lineHeight || 4;
+        const fontSize = options.fontSize || 10;
+        const fontStyle = options.fontStyle || 'normal';
+        const maxWidth = options.maxWidth || contentWidth;
+
+        doc.setFontSize(fontSize);
+        doc.setFont(undefined, fontStyle);
+
+        const lines = doc.splitTextToSize(text, maxWidth);
+        lines.forEach((line, index) => {
+            if (y + (index * lineHeight) > pageHeight - margin) {
+                doc.addPage();
+                addHeaderAndFooter(doc.internal.getNumberOfPages());
+                y = margin;
+            }
+            doc.text(line, x, y + (index * lineHeight));
+        });
+
+        return y + (lines.length * lineHeight);
+    }
+
+    // Logo
+    if (logoSosmedecins && logoSosmedecins.complete) {
+        doc.addImage(logoSosmedecins, 'PNG', margin, 10, 50, 20);
+    }
+
+    let yPosition = 40;
+
+    // Informations du patient (colonne gauche)
+    yPosition = addTextWithOverflow('Patient :', margin, yPosition, { fontSize: 11, fontStyle: 'bold', maxWidth: columnWidth });
+    yPosition = addTextWithOverflow(`Nom : ${lastName}`, margin, yPosition + 3, { fontSize: 10, maxWidth: columnWidth });
+    yPosition = addTextWithOverflow(`Prénom : ${firstName}`, margin, yPosition + 3, { fontSize: 10, maxWidth: columnWidth });
+    yPosition = addTextWithOverflow(`Date de naissance : ${birthDate}`, margin, yPosition + 3, { fontSize: 10, maxWidth: columnWidth });
+
+    // Informations du médecin (colonne droite)
+    let rightColumnY = 40;
+    const doctorInfoX = margin + columnWidth + 10;
+    rightColumnY = addTextWithOverflow('Dr [Nom du médecin]', doctorInfoX, rightColumnY, { fontSize: 11, fontStyle: 'bold', maxWidth: columnWidth });
+    rightColumnY = addTextWithOverflow('RPPS : [RPPS du médecin]', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+    rightColumnY = addTextWithOverflow('ADELI : [ADELI du médecin]', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+    rightColumnY = addTextWithOverflow('Adresse : [Adresse du médecin]', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+    rightColumnY = addTextWithOverflow('Tél : 05 56 44 74 74', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+
+    yPosition = Math.max(yPosition, rightColumnY) + 10;
+
+    // Titre du rapport
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Compte rendu d\'échographie', pageWidth / 2, yPosition, { align: 'center' });
+
+    yPosition += 10;
+
+    // Date et heure
+    const currentDate = new Date().toLocaleString('fr-FR');
+    yPosition = addTextWithOverflow(`Date et heure : ${currentDate}`, margin, yPosition, { fontSize: 10 });
+
+    // Type d'échographie
+    const echoType = document.getElementById('echoTypeSelect').value;
+    yPosition = addTextWithOverflow(`Type d'échographie : ${ECHO_TYPES[echoType].name}`, margin, yPosition + 4, { fontSize: 10, fontStyle: 'bold' });
+
+    yPosition += 10;
+
+    // Contenu du rapport
+    const reportContent = document.getElementById('reportText').value;
+    const sections = reportContent.split('\n\n');
+
+    sections.forEach(section => {
+        const [title, ...content] = section.split('\n');
+        yPosition = addTextWithOverflow(title, margin, yPosition, { fontSize: 11, fontStyle: 'bold' });
+        yPosition += 2;
+        content.forEach(line => {
+            yPosition = addTextWithOverflow(line, margin + 5, yPosition, { fontSize: 10 });
+        });
+        yPosition += 5;
+    });
+
+    // Signature du médecin
+    yPosition = addTextWithOverflow('Signature du médecin :', margin, yPosition + 10, { fontSize: 10 });
+    yPosition = addTextWithOverflow('Dr [Nom du médecin]', margin, yPosition + 5, { fontSize: 10 });
+
+    // Pages pour les images
+    if (uploadedImages.length > 0) {
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        const margin = 10;
+        const imageSize = (pageWidth - 4 * margin) / 2; // 2 colonnes
+        const xPositions = [margin, pageWidth / 2 + margin / 2];
+        let currentY = margin;
+        let currentPage = 1;
+        let imagesOnCurrentPage = 0;
+
+        const addImageToPDF = (imgData, index) => {
+            if (currentPage === 1 || imagesOnCurrentPage === 6) {
+                doc.addPage();
+                currentPage++;
+                addHeaderAndFooter(currentPage);
+                currentY = 15; // Ajusté pour laisser de la place à l'en-tête
+                imagesOnCurrentPage = 0;
+            }
+
+            const x = xPositions[imagesOnCurrentPage % 2];
+            doc.addImage(imgData, 'JPEG', x, currentY, imageSize, imageSize);
+            imagesOnCurrentPage++;
+
+            if (imagesOnCurrentPage % 2 === 0) {
+                currentY += imageSize + margin;
+            }
+        };
+
+        let imagesProcessed = 0;
+        uploadedImages.forEach((image, index) => {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0); // Qualité maximale
+                    addImageToPDF(imgData, index);
+                    imagesProcessed++;
+                    if (imagesProcessed === uploadedImages.length) {
+                        doc.save('rapport_echographie_avec_images.pdf');
+                    }
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(image);
+        });
+    } else {
+        doc.save('rapport_echographie.pdf');
+    }
+}
+// Mise à jour de l'initialisation pour inclure le gestionnaire d'événements pour le bouton de génération de PDF
+function initializeEchoPage() {
+    console.log('Initialisation de la page d\'échographie');
+    initializeImageUpload();
+    const echoTypeSelect = document.getElementById('echoTypeSelect');
     if (echoTypeSelect) {
         echoTypeSelect.addEventListener('change', function() {
             updateEchoCategories(this.value);
         });
-        // Initialiser avec le premier type d'écho
         updateEchoCategories(echoTypeSelect.value);
     }
 
+    const reportText = document.getElementById('reportText');
     if (reportText) {
         reportText.addEventListener('input', function() {
             adjustTextareaHeight(this);
@@ -658,22 +865,51 @@ function initializeEchoPage() {
         adjustTextareaHeight(reportText);
     }
 
+    const copyButton = document.getElementById('copyButton');
     if (copyButton) {
         copyButton.addEventListener('click', copyReport);
     }
 
+    const resetButton = document.getElementById('resetButton');
     if (resetButton) {
         resetButton.addEventListener('click', resetAll);
     }
 
+    const addImageButton = document.getElementById('addImageButton');
     if (addImageButton) {
         addImageButton.addEventListener('click', addImage);
     }
 
+    const generatePDFButton = document.getElementById('generatePDFButton');
     if (generatePDFButton) {
-        generatePDFButton.addEventListener('click', generatePDF);
+        console.log('Bouton Générer PDF trouvé');
+        generatePDFButton.addEventListener('click', showPatientInfoModal);
+    } else {
+        console.error('Bouton Générer PDF non trouvé');
     }
+
+    const confirmPatientInfoButton = document.getElementById('confirmPatientInfo');
+    if (confirmPatientInfoButton) {
+        confirmPatientInfoButton.addEventListener('click', handlePatientInfo);
+    }
+
+    const cancelPatientInfoButton = document.getElementById('cancelPatientInfo');
+    if (cancelPatientInfoButton) {
+        cancelPatientInfoButton.addEventListener('click', hidePatientInfoModal);
+    }
+
+    const echoCategoriesContainer = document.getElementById('echo-categories');
+    if (echoCategoriesContainer) {
+        echoCategoriesContainer.addEventListener('change', function(event) {
+            if (event.target.type === 'checkbox') {
+                updateEchoReport();
+            }
+        });
+    }
+
+    console.log('Initialisation de la page d\'échographie terminée');
 }
+
 
 function updateEchoCategories(echoType) {
     const echoCategoriesContainer = document.getElementById('echo-categories');
@@ -698,11 +934,16 @@ function updateEchoReport() {
         selectedEcho.categories.forEach(category => {
             let categoryReport = "";
             category.symptoms.forEach((symptom, index) => {
-                const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
-                if (checkbox && checkbox.checked) {
-                    if (typeof symptom === 'string') {
+                if (typeof symptom === 'object' && symptom.isSubtitle) {
+                    categoryReport += `\n${symptom.text}\n`;
+                } else if (typeof symptom === 'string') {
+                    const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
+                    if (checkbox && checkbox.checked) {
                         categoryReport += `- ${symptom}\n`;
-                    } else {
+                    }
+                } else {
+                    const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
+                    if (checkbox && checkbox.checked) {
                         const inputs = checkbox.parentNode.querySelectorAll('input[type="number"]');
                         if (inputs.length > 0 && inputs[0].value) {
                             let symptomText = `- ${symptom.text}${inputs[0].value} ${symptom.unit}`;
@@ -764,11 +1005,6 @@ function resetEchoReport() {
 function addImage() {
     // Fonctionnalité à implémenter
     console.log('Fonctionnalité d\'ajout d\'image à implémenter');
-}
-
-function generatePDF() {
-    // Fonctionnalité à implémenter
-    console.log('Fonctionnalité de génération de PDF à implémenter');
 }
 
 const ECHO_TYPES = {
@@ -1012,3 +1248,26 @@ const ECHO_TYPES = {
         ]
     }
 };
+
+
+
+function showPatientInfoModal() {
+    document.getElementById('patientInfoModal').style.display = 'block';
+  }
+  
+  function hidePatientInfoModal() {
+    document.getElementById('patientInfoModal').style.display = 'none';
+  }
+  
+  function handlePatientInfo() {
+    const lastName = document.getElementById('patientLastName').value;
+    const firstName = document.getElementById('patientFirstName').value;
+    const birthDate = document.getElementById('patientBirthDate').value;
+  
+    if (lastName && firstName && birthDate) {
+      hidePatientInfoModal();
+      generatePDF(lastName, firstName, birthDate);
+    } else {
+      alert('Veuillez remplir tous les champs.');
+    }
+  }
