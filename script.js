@@ -772,19 +772,24 @@ function generatePDF(lastName, firstName, birthDate) {
 
     yPosition += 10;
 
-    // Contenu du rapport
-    const reportContent = document.getElementById('reportText').value;
-    const sections = reportContent.split('\n\n');
-
-    sections.forEach(section => {
-        const [title, ...content] = section.split('\n');
-        yPosition = addTextWithOverflow(title, margin, yPosition, { fontSize: 11, fontStyle: 'bold' });
-        yPosition += 2;
-        content.forEach(line => {
-            yPosition = addTextWithOverflow(line, margin + 5, yPosition, { fontSize: 10 });
-        });
-        yPosition += 5;
-    });
+     // Contenu du rapport
+     const reportContent = document.getElementById('reportText').value;
+     const sections = reportContent.split('\n\n');
+ 
+     sections.forEach(section => {
+         const [title, ...content] = section.split('\n');
+         yPosition = addTextWithOverflow(title, margin, yPosition, { fontSize: 11, fontStyle: 'bold' });
+         yPosition += 2;
+         content.forEach(line => {
+             if (line.startsWith('Jambe') || line.startsWith('Rein') || line.includes('CARREFOUR') || line.includes('RÉGION')) {
+                 // Sous-titres
+                 yPosition = addTextWithOverflow(line, margin + 2, yPosition, { fontSize: 10, fontStyle: 'italic' });
+             } else {
+                 yPosition = addTextWithOverflow(line, margin + 5, yPosition, { fontSize: 9 });
+             }
+         });
+         yPosition += 5;
+     });
 
     // Signature du médecin
     yPosition = addTextWithOverflow('Signature du médecin :', margin, yPosition + 10, { fontSize: 10 });
@@ -933,24 +938,34 @@ function updateEchoReport() {
     if (selectedEcho) {
         selectedEcho.categories.forEach(category => {
             let categoryReport = "";
+            let hasContent = false;
+            let currentSubtitle = "";
+
             category.symptoms.forEach((symptom, index) => {
                 if (typeof symptom === 'object' && symptom.isSubtitle) {
-                    categoryReport += `\n${symptom.text}\n`;
-                } else if (typeof symptom === 'string') {
-                    const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
-                    if (checkbox && checkbox.checked) {
-                        categoryReport += `- ${symptom}\n`;
-                    }
+                    currentSubtitle = symptom.text;
                 } else {
                     const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
                     if (checkbox && checkbox.checked) {
-                        const inputs = checkbox.parentNode.querySelectorAll('input[type="number"]');
-                        if (inputs.length > 0 && inputs[0].value) {
-                            let symptomText = `- ${symptom.text}${inputs[0].value} ${symptom.unit}`;
-                            if (symptom.secondInput && inputs.length > 1 && inputs[1].value) {
-                                symptomText += ` x ${inputs[1].value} ${symptom.unit}`;
+                        if (!hasContent) {
+                            categoryReport += `${category.name}:\n`;
+                            hasContent = true;
+                        }
+                        if (currentSubtitle) {
+                            categoryReport += `${currentSubtitle}\n`;
+                            currentSubtitle = ""; // Reset subtitle after using it
+                        }
+                        if (typeof symptom === 'string') {
+                            categoryReport += `- ${symptom}\n`;
+                        } else {
+                            const inputs = checkbox.parentNode.querySelectorAll('input[type="number"]');
+                            if (inputs.length > 0 && inputs[0].value) {
+                                let symptomText = `- ${symptom.text}${inputs[0].value} ${symptom.unit}`;
+                                if (symptom.secondInput && inputs.length > 1 && inputs[1].value) {
+                                    symptomText += ` x ${inputs[1].value} ${symptom.unit}`;
+                                }
+                                categoryReport += symptomText + '\n';
                             }
-                            categoryReport += symptomText + '\n';
                         }
                     }
                 }
@@ -960,11 +975,14 @@ function updateEchoReport() {
             const customCheckbox = document.querySelector(`input[name="${category.id}-custom"]`);
             const customInput = customCheckbox.nextElementSibling;
             if (customCheckbox && customCheckbox.checked && customInput && customInput.value.trim()) {
+                if (!hasContent) {
+                    categoryReport += `${category.name}:\n`;
+                }
                 categoryReport += `- ${customInput.value.trim()}\n`;
             }
             
             if (categoryReport) {
-                report += `${category.name}:\n${categoryReport}\n`;
+                report += categoryReport + '\n';
             }
         });
     }
