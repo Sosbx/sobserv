@@ -635,7 +635,6 @@ button {
 .remove-image:hover {
     background-color: #ff1a1a;
 }
-
 .symptom-row {
     display: flex;
     align-items: center;
@@ -647,52 +646,50 @@ button {
     display: flex;
     align-items: center;
     flex-grow: 1;
+    margin-bottom: 0;
 }
 
 .symptom-row input[type="checkbox"] {
     margin-right: 10px;
+    flex-shrink: 0;
 }
 
 .custom-symptom-row {
-    display: flex;
-    align-items: center;
-    margin: 5px 0;
-    padding-left: 24px; /* Aligne avec les autres symptômes */
+    padding-left: 0;
 }
 
 .custom-symptom-input {
     flex-grow: 1;
-    width: 50%; /* Prend la moitié du conteneur */
+    width: 33%; /* 1/3 de la largeur du conteneur */
+    min-width: 100px; /* Largeur minimale pour éviter qu'il ne devienne trop petit */
     max-width: calc(100% - 80px); /* S'adapte à la largeur disponible */
     padding: 5px;
     border: 1px solid var(--indigo-300);
     border-radius: 4px;
     font-size: 14px;
+    margin-right: 10px;
+}
+
+.add-custom-symptom,
+.remove-custom-symptom {
+    background-color: transparent;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+    flex-shrink: 0;
 }
 
 .add-custom-symptom {
-    background-color: transparent;
     color: var(--indigo-600);
-    border: none;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 0 5px;
-    position: absolute;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    position: static;
+    transform: none;
 }
 
 .remove-custom-symptom {
-    background-color: transparent;
     color: #ff4d4d;
-    border: none;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 0 5px;
-    margin-left: 5px;
+    margin-left: auto;
 }
 
 @media (max-width: 768px) {

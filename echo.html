@@ -40,6 +40,28 @@
                 <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
                 <div id="uploadedImagesList"></div>
                 <button id="generatePDFButton">Générer PDF</button>
+                <!-- Ajoutez ce code HTML là où vous voulez que le formulaire apparaisse -->
+<div id="doctorInfoModal" class="modal">
+    <div class="modal-content">
+      <h2>Informations du médecin</h2>
+      <form id="doctorInfoForm">
+        <label for="doctorName">Nom :</label>
+        <input type="text" id="doctorName" name="doctorName">
+        
+        <label for="doctorRPPS">RPPS :</label>
+        <input type="text" id="doctorRPPS" name="doctorRPPS">
+        
+        <label for="doctorADELI">ADELI :</label>
+        <input type="text" id="doctorADELI" name="doctorADELI">
+        
+        <label for="doctorAddress">Adresse :</label>
+        <input type="text" id="doctorAddress" name="doctorAddress">
+        
+        <button type="submit">Enregistrer</button>
+        <button type="button" id="cancelDoctorInfo">Annuler</button>
+      </form>
+    </div>
+  </div>
             </div>
         </div>
     </div>

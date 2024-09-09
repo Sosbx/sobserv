@@ -410,15 +410,29 @@ function generateCategoryHTML(category, isEchoPage = false) {
     `;
 }
 
+
 function addCustomSymptom(button, categoryId, index, isEchoPage) {
     const newRow = document.createElement('div');
     newRow.className = 'symptom-row custom-symptom-row';
     newRow.innerHTML = `
-        <input type="checkbox" name="${categoryId}-custom-${index}" onchange="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
-        <input type="text" class="custom-symptom-input" placeholder="Autre" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+        <label>
+            <input type="checkbox" name="${categoryId}-custom-${index}" onchange="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+            <input type="text" class="custom-symptom-input" placeholder="Autre" oninput="handleCustomSymptomInput(this, ${isEchoPage})">
+        </label>
         <button class="remove-custom-symptom" onclick="removeCustomSymptom(this, ${isEchoPage})">-</button>
     `;
     button.parentNode.insertAdjacentElement('afterend', newRow);
+    
+    if (isEchoPage) {
+        updateEchoReport();
+    } else {
+        updateMainReport();
+    }
+}
+
+function handleCustomSymptomInput(input, isEchoPage) {
+    const checkbox = input.parentNode.querySelector('input[type="checkbox"]');
+    checkbox.checked = input.value.trim() !== '';
     
     if (isEchoPage) {
         updateEchoReport();
@@ -460,50 +474,52 @@ function updateMainReport() {
         let categoryReport = "";
         let hasContent = false;
 
-        category.symptoms.forEach((symptom, index) => {
-            const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
+        const categoryElement = document.getElementById(`category-${category.id}`);
+        const symptomRows = categoryElement.querySelectorAll('.symptom-row');
+
+        symptomRows.forEach((row) => {
+            const checkbox = row.querySelector('input[type="checkbox"]');
             if (checkbox && checkbox.checked) {
                 if (!hasContent) {
                     categoryReport += `${category.name}:\n`;
                     hasContent = true;
                 }
-                if (typeof symptom === 'string') {
-                    categoryReport += `- ${symptom}\n`;
-                } else if (typeof symptom === 'object' && !symptom.isSubtitle) {
-                    const inputs = checkbox.parentNode.querySelectorAll('input[type="number"]');
-                    if (inputs.length > 0 && inputs[0].value) {
-                        let symptomText = `- ${symptom.text}${inputs[0].value} ${symptom.unit}`;
-                        if (symptom.secondInput && inputs.length > 1 && inputs[1].value) {
-                            symptomText += ` x ${inputs[1].value} ${symptom.unit}`;
+
+                if (row.classList.contains('custom-symptom-row')) {
+                    const textInput = row.querySelector('.custom-symptom-input');
+                    if (textInput && textInput.value.trim()) {
+                        categoryReport += `- ${textInput.value.trim()}\n`;
+                    }
+                } else {
+                    let symptomText = row.textContent.trim();
+                    // Supprime le symbole '+' à la fin du texte s'il existe
+                    symptomText = symptomText.replace(/\+$/, '').trim();
+                    
+                    const inputs = row.querySelectorAll('input[type="number"]');
+                    if (inputs.length > 0) {
+                        let inputText = `${symptomText}: `;
+                        inputText += inputs[0].value + (inputs[1] ? ` x ${inputs[1].value}` : '');
+                        if (row.textContent.includes('cm')) {
+                            inputText += ' cm';
+                        } else if (row.textContent.includes('mm')) {
+                            inputText += ' mm';
                         }
-                        categoryReport += symptomText + '\n';
+                        categoryReport += `- ${inputText}\n`;
+                    } else {
+                        categoryReport += `- ${symptomText}\n`;
                     }
                 }
             }
         });
 
-        // Ajout des symptômes personnalisés
-        const customSymptoms = document.querySelectorAll(`#category-${category.id} .custom-symptom-row`);
-        customSymptoms.forEach(customSymptom => {
-            const checkbox = customSymptom.querySelector('input[type="checkbox"]');
-            const textInput = customSymptom.querySelector('input[type="text"]');
-            if (checkbox.checked && textInput.value.trim()) {
-                if (!hasContent) {
-                    categoryReport += `${category.name}:\n`;
-                    hasContent = true;
-                }
-                categoryReport += `- ${textInput.value.trim()}\n`;
-            }
-        });
-
         if (categoryReport) {
-            report += categoryReport + '\n';
+            report += categoryReport.trim() + '\n\n'; // Ajoute un double saut de ligne entre les catégories
         }
     });
 
     const reportTextArea = document.getElementById('reportText');
     if (reportTextArea) {
-        reportTextArea.value = report.trim();
+        reportTextArea.value = report.trim(); // Supprime les espaces superflus au début et à la fin
         adjustTextareaHeight(reportTextArea);
     }
 }
@@ -1003,59 +1019,56 @@ function updateEchoReport() {
             let hasContent = false;
             let currentSubtitle = "";
 
-            category.symptoms.forEach((symptom, index) => {
-                if (typeof symptom === 'object' && symptom.isSubtitle) {
-                    currentSubtitle = symptom.text;
-                } else {
-                    const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
-                    if (checkbox && checkbox.checked) {
-                        if (!hasContent) {
-                            categoryReport += `${category.name}:\n`;
-                            hasContent = true;
+            const categoryElement = document.getElementById(`category-${category.id}`);
+            const symptomRows = categoryElement.querySelectorAll('.symptom-row');
+
+            symptomRows.forEach((row) => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                if (checkbox && checkbox.checked) {
+                    if (!hasContent) {
+                        categoryReport += `${category.name}:\n`;
+                        hasContent = true;
+                    }
+
+                    if (row.classList.contains('custom-symptom-row')) {
+                        const textInput = row.querySelector('.custom-symptom-input');
+                        if (textInput && textInput.value.trim()) {
+                            categoryReport += `- ${textInput.value.trim()}\n`;
                         }
-                        if (currentSubtitle) {
-                            categoryReport += `${currentSubtitle}\n`;
-                            currentSubtitle = ""; // Reset subtitle after using it
-                        }
-                        if (typeof symptom === 'string') {
-                            categoryReport += `- ${symptom}\n`;
+                    } else {
+                        let symptomText = row.textContent.trim();
+                        // Supprime le symbole '+' à la fin du texte s'il existe
+                        symptomText = symptomText.replace(/\+$/, '').trim();
+                        
+                        if (symptomText.startsWith('Rein') || symptomText.startsWith('Vessie')) {
+                            currentSubtitle = symptomText;
                         } else {
-                            const inputs = checkbox.parentNode.querySelectorAll('input[type="number"]');
-                            if (inputs.length > 0 && inputs[0].value) {
-                                let symptomText = `- ${symptom.text}${inputs[0].value} ${symptom.unit}`;
-                                if (symptom.secondInput && inputs.length > 1 && inputs[1].value) {
-                                    symptomText += ` x ${inputs[1].value} ${symptom.unit}`;
-                                }
+                            if (currentSubtitle) {
+                                categoryReport += `${currentSubtitle}\n`;
+                                currentSubtitle = "";
+                            }
+                            const inputs = row.querySelectorAll('input[type="number"]');
+                            if (inputs.length > 0) {
+                                let symptomText = `- ${row.textContent.split(':')[0].trim()}: `;
+                                symptomText += inputs[0].value + (inputs[1] ? ` x ${inputs[1].value}` : '') + ' cm';
                                 categoryReport += symptomText + '\n';
+                            } else {
+                                categoryReport += `- ${symptomText}\n`;
                             }
                         }
                     }
                 }
             });
-            
-            // Ajout des symptômes personnalisés
-            const customSymptoms = document.querySelectorAll(`#category-${category.id} .custom-symptom-row`);
-            customSymptoms.forEach(customSymptom => {
-                const checkbox = customSymptom.querySelector('input[type="checkbox"]');
-                const textInput = customSymptom.querySelector('input[type="text"]');
-                if (checkbox.checked && textInput.value.trim()) {
-                    if (!hasContent) {
-                        categoryReport += `${category.name}:\n`;
-                        hasContent = true;
-                    }
-                    categoryReport += `- ${textInput.value.trim()}\n`;
-                }
-            });
-            
+
             if (categoryReport) {
-                report += categoryReport + '\n';
+                report += categoryReport.trim() + '\n\n'; // Ajoute un double saut de ligne entre les catégories
             }
         });
     }
     
     const reportText = document.getElementById('reportText');
     if (reportText) {
-        reportText.value = report.trim();
+        reportText.value = report.trim(); // Supprime les espaces superflus au début et à la fin
         adjustTextareaHeight(reportText);
     }
 }
