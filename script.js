@@ -415,7 +415,7 @@ function addCustomSymptom(button, categoryId, index, isEchoPage) {
     newRow.className = 'symptom-row custom-symptom-row';
     newRow.innerHTML = `
         <input type="checkbox" name="${categoryId}-custom-${index}" onchange="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
-        <input type="text" class="custom-symptom-input" placeholder="Symptôme personnalisé" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+        <input type="text" class="custom-symptom-input" placeholder="Autre" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
         <button class="remove-custom-symptom" onclick="removeCustomSymptom(this, ${isEchoPage})">-</button>
     `;
     button.parentNode.insertAdjacentElement('afterend', newRow);
