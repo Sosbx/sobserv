@@ -377,7 +377,7 @@ const elements = {
 };
 
 // Functions
-function generateCategoryHTML(category) {
+function generateCategoryHTML(category, isEchoPage = false) {
     return `
         <div class="category" id="category-${category.id}">
             <div class="category-title" onclick="toggleCategory(${category.id})">
@@ -388,32 +388,52 @@ function generateCategoryHTML(category) {
                 ${category.symptoms.map((symptom, index) => {
                     if (typeof symptom === 'object' && symptom.isSubtitle) {
                         return `<h4 class="symptom-subtitle">${symptom.text}</h4>`;
-                    } else if (typeof symptom === 'string') {
-                        return `
-                            <label>
-                                <input type="checkbox" name="${category.id}-${index}" onchange="updateEchoReport()">
-                                ${symptom}
-                            </label>
-                        `;
                     } else {
                         return `
-                            <label>
-                                <input type="checkbox" name="${category.id}-${index}" onchange="updateEchoReport()">
-                                ${symptom.text}
-                                <input type="number" class="symptom-input" step="0.1" min="0" oninput="updateEchoReport()">
-                                ${symptom.unit}
-                                ${symptom.secondInput ? `x <input type="number" class="symptom-input" step="0.1" min="0" oninput="updateEchoReport()"> ${symptom.unit}` : ''}
-                            </label>
+                            <div class="symptom-row">
+                                <label>
+                                    <input type="checkbox" name="${category.id}-${index}" onchange="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+                                    ${typeof symptom === 'string' ? symptom : symptom.text}
+                                    ${typeof symptom === 'object' && symptom.input ? `
+                                        <input type="number" class="symptom-input" step="0.1" min="0" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+                                        ${symptom.unit}
+                                        ${symptom.secondInput ? `x <input type="number" class="symptom-input" step="0.1" min="0" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}"> ${symptom.unit}` : ''}
+                                    ` : ''}
+                                </label>
+                                <button class="add-custom-symptom" onclick="addCustomSymptom(this, ${category.id}, ${index}, ${isEchoPage})">+</button>
+                            </div>
                         `;
                     }
                 }).join('')}
-                <label class="custom-symptom">
-                    <input type="checkbox" name="${category.id}-custom" onchange="updateEchoReport()">
-                    <input type="text" placeholder="Autre" oninput="updateEchoReport()">
-                </label>
             </div>
         </div>
     `;
+}
+
+function addCustomSymptom(button, categoryId, index, isEchoPage) {
+    const newRow = document.createElement('div');
+    newRow.className = 'symptom-row custom-symptom-row';
+    newRow.innerHTML = `
+        <input type="checkbox" name="${categoryId}-custom-${index}" onchange="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+        <input type="text" class="custom-symptom-input" placeholder="Symptôme personnalisé" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+        <button class="remove-custom-symptom" onclick="removeCustomSymptom(this, ${isEchoPage})">-</button>
+    `;
+    button.parentNode.insertAdjacentElement('afterend', newRow);
+    
+    if (isEchoPage) {
+        updateEchoReport();
+    } else {
+        updateMainReport();
+    }
+}
+
+function removeCustomSymptom(button, isEchoPage) {
+    button.parentNode.remove();
+    if (isEchoPage) {
+        updateEchoReport();
+    } else {
+        updateMainReport();
+    }
 }
 
 function toggleCategory(categoryId) {
@@ -434,23 +454,58 @@ function toggleAllSymptoms(categoryId, checked) {
     }
 }
 
-function updateReport() {
+function updateMainReport() {
     let report = "";
     CATEGORIES.forEach(category => {
-        const categorySymptoms = category.symptoms.filter(symptom => {
-            const checkbox = document.querySelector(`input[name="${category.id}-${symptom}"]`);
-            return checkbox && checkbox.checked;
+        let categoryReport = "";
+        let hasContent = false;
+
+        category.symptoms.forEach((symptom, index) => {
+            const checkbox = document.querySelector(`input[name="${category.id}-${index}"]`);
+            if (checkbox && checkbox.checked) {
+                if (!hasContent) {
+                    categoryReport += `${category.name}:\n`;
+                    hasContent = true;
+                }
+                if (typeof symptom === 'string') {
+                    categoryReport += `- ${symptom}\n`;
+                } else if (typeof symptom === 'object' && !symptom.isSubtitle) {
+                    const inputs = checkbox.parentNode.querySelectorAll('input[type="number"]');
+                    if (inputs.length > 0 && inputs[0].value) {
+                        let symptomText = `- ${symptom.text}${inputs[0].value} ${symptom.unit}`;
+                        if (symptom.secondInput && inputs.length > 1 && inputs[1].value) {
+                            symptomText += ` x ${inputs[1].value} ${symptom.unit}`;
+                        }
+                        categoryReport += symptomText + '\n';
+                    }
+                }
+            }
         });
-        if (categorySymptoms.length > 0) {
-            report += `${category.name}:\n`;
-            categorySymptoms.forEach(symptom => {
-                report += `- ${symptom}\n`;
-            });
-            report += '\n';
+
+        // Ajout des symptômes personnalisés
+        const customSymptoms = document.querySelectorAll(`#category-${category.id} .custom-symptom-row`);
+        customSymptoms.forEach(customSymptom => {
+            const checkbox = customSymptom.querySelector('input[type="checkbox"]');
+            const textInput = customSymptom.querySelector('input[type="text"]');
+            if (checkbox.checked && textInput.value.trim()) {
+                if (!hasContent) {
+                    categoryReport += `${category.name}:\n`;
+                    hasContent = true;
+                }
+                categoryReport += `- ${textInput.value.trim()}\n`;
+            }
+        });
+
+        if (categoryReport) {
+            report += categoryReport + '\n';
         }
     });
-    elements.reportTextArea.value = report.trim();
-    adjustTextareaHeight(elements.reportTextArea);
+
+    const reportTextArea = document.getElementById('reportText');
+    if (reportTextArea) {
+        reportTextArea.value = report.trim();
+        adjustTextareaHeight(reportTextArea);
+    }
 }
 
 function adjustTextareaHeight(element) {
@@ -519,7 +574,15 @@ function initializeApp() {
         initializeDropdowns();
         
         if (elements.categoriesContainer) {
-            elements.categoriesContainer.innerHTML = CATEGORIES.map(generateCategoryHTML).join('');
+            elements.categoriesContainer.innerHTML = CATEGORIES.map(category => generateCategoryHTML(category, false)).join('');
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateMainReport);
+            });
+            
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', updateMainReport);
+            });
         } else {
             console.error("L'élément avec l'ID 'categories' n'a pas été trouvé.");
         }
@@ -921,9 +984,8 @@ function updateEchoCategories(echoType) {
     const selectedEcho = ECHO_TYPES[echoType];
     
     if (selectedEcho && echoCategoriesContainer) {
-        echoCategoriesContainer.innerHTML = selectedEcho.categories.map(generateCategoryHTML).join('');
+        echoCategoriesContainer.innerHTML = selectedEcho.categories.map(category => generateCategoryHTML(category, true)).join('');
         
-        // Ajoutez des écouteurs d'événements pour les cases à cocher
         document.querySelectorAll('#echo-categories input[type="checkbox"]').forEach(checkbox => {
             checkbox.addEventListener('change', updateEchoReport);
         });
@@ -971,15 +1033,19 @@ function updateEchoReport() {
                 }
             });
             
-            // Ajout de l'option personnalisée
-            const customCheckbox = document.querySelector(`input[name="${category.id}-custom"]`);
-            const customInput = customCheckbox.nextElementSibling;
-            if (customCheckbox && customCheckbox.checked && customInput && customInput.value.trim()) {
-                if (!hasContent) {
-                    categoryReport += `${category.name}:\n`;
+            // Ajout des symptômes personnalisés
+            const customSymptoms = document.querySelectorAll(`#category-${category.id} .custom-symptom-row`);
+            customSymptoms.forEach(customSymptom => {
+                const checkbox = customSymptom.querySelector('input[type="checkbox"]');
+                const textInput = customSymptom.querySelector('input[type="text"]');
+                if (checkbox.checked && textInput.value.trim()) {
+                    if (!hasContent) {
+                        categoryReport += `${category.name}:\n`;
+                        hasContent = true;
+                    }
+                    categoryReport += `- ${textInput.value.trim()}\n`;
                 }
-                categoryReport += `- ${customInput.value.trim()}\n`;
-            }
+            });
             
             if (categoryReport) {
                 report += categoryReport + '\n';

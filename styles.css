@@ -635,3 +635,68 @@ button {
 .remove-image:hover {
     background-color: #ff1a1a;
 }
+
+.symptom-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    position: relative;
+}
+
+.symptom-row label {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.symptom-row input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.custom-symptom-row {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    padding-left: 24px; /* Aligne avec les autres symptômes */
+}
+
+.custom-symptom-input {
+    flex-grow: 1;
+    width: 50%; /* Prend la moitié du conteneur */
+    max-width: calc(100% - 80px); /* S'adapte à la largeur disponible */
+    padding: 5px;
+    border: 1px solid var(--indigo-300);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.add-custom-symptom {
+    background-color: transparent;
+    color: var(--indigo-600);
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.remove-custom-symptom {
+    background-color: transparent;
+    color: #ff4d4d;
+    border: none;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+    margin-left: 5px;
+}
+
+@media (max-width: 768px) {
+    .custom-symptom-input {
+        width: calc(100% - 60px);
+    }
+}
