@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -9,8 +9,14 @@
     <link rel="icon" type="image/png" href="sobserv-favicon.png">
 </head>
 <body>
-    <div class="nav-buttons">
-        <button id="echoButton" class="nav-button">Échographie</button>
+    <button id="menuButton" class="menu-button" aria-expanded="false" aria-controls="menuDropdown">☰</button>
+    <div class="menu-overlay"></div>
+    <nav id="menuDropdown" class="menu-dropdown" aria-label="Menu principal">
+        <a href="index.html" class="menu-item">Observations</a>
+        <a href="echo.html" class="menu-item">Échographie</a>
+        <a href="profile.html" id="profileLink" class="menu-item">Profil</a>
+        <a href="#" id="authButton" class="menu-item">Connexion</a>
+    </nav>
     </div>
     <header>
         <h1 class="title">SObserv</h1>
@@ -27,13 +33,11 @@
             <div id="favorites-content" class="tab-content">
                 <div class="favorites-buttons">
                     <button class="favorite-btn" data-favorite="examen-normal">Examen normal</button>
-                   
                     <button class="favorite-btn" data-favorite="angine-strepta-plus">Angine Strepta +</button>
                     <button class="favorite-btn" data-favorite="angine-strepta-minus">Angine Strepta -</button>
                     <button class="favorite-btn" data-favorite="colique-nephretique">Clq néphrétique</button>
                     <button class="favorite-btn" data-favorite="conjonctivite">Conjonctivite</button>
                     <button class="favorite-btn" data-favorite="coqueluche">Coqueluche</button>
-
                     <button class="favorite-btn" data-favorite="cystite">Cystite</button>
                     <button class="favorite-btn" data-favorite="deces">Décès</button>
                     <button class="favorite-btn" data-favorite="depression">Dépression</button>
@@ -65,5 +69,53 @@
         </div>
     </div>
     <script src="script.js"></script>
+    <script>
+    function startSignIn() {
+        const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
+        const redirectUri = 'http://127.0.0.1:5500/callback.html';
+        const scope = 'email profile';
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
+        window.location.href = authUrl;
+    }
+    </script>
+    <script>
+        function handleAuth() {
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                // L'utilisateur est connecté, on le déconnecte
+                localStorage.removeItem('userInfo');
+                updateAuthButton();
+                alert('Vous avez été déconnecté.');
+            } else {
+                // L'utilisateur n'est pas connecté, on lance la connexion
+                startSignIn();
+            }
+        }
+        
+        function updateAuthButton() {
+            const authButton = document.getElementById('authButton');
+            const profileLink = document.getElementById('profileLink');
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                const user = JSON.parse(userInfo);
+                authButton.textContent = `Déconnexion (${user.name})`;
+                profileLink.style.display = 'block';
+            } else {
+                authButton.textContent = 'Connexion Google';
+                profileLink.style.display = 'none';
+            }
+        }
+        
+        function startSignIn() {
+            const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
+            const redirectUri = 'http://127.0.0.1:5500/callback.html';
+            const scope = 'email profile';
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
+            window.location.href = authUrl;
+        }
+        
+        // Mettre à jour le bouton au chargement de la page
+        document.addEventListener('DOMContentLoaded', updateAuthButton);
+        </script>
 </body>
 </html>

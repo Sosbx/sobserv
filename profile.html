@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SObserv - Profil</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="profile.css">
+    <link rel="icon" type="image/svg+xml" href="sobserv-favicon.svg">
+    <link rel="icon" type="image/png" href="sobserv-favicon.png">
+</head>
+<body>
+    <button id="menuButton" class="menu-button" aria-expanded="false" aria-controls="menuDropdown">☰</button>
+    <div class="menu-overlay"></div>
+    <nav id="menuDropdown" class="menu-dropdown" aria-label="Menu principal">
+        <a href="index.html" class="menu-item">Observations</a>
+        <a href="echo.html" class="menu-item">Échographie</a>
+        <a href="profile.html" id="profileLink" class="menu-item">Profil</a>
+        <a href="#" id="authButton" class="menu-item">Connexion</a>
+    </nav>
+    <header>
+
+    <h1 class="title">SObserv - Profil</h1>
+
+    <div class="container">
+        <div id="profileForm" style="display: none;">
+            <form id="userProfileForm">
+                <div class="form-group">
+                    <label for="name">Nom complet:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" required readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="rpps">RPPS:</label>
+                    <input type="text" id="rpps" name="rpps" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="adeli">ADELI:</label>
+                    <input type="text" id="adeli" name="adeli" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Adresse :</label>
+                    <input type="text" id="address" name="address">
+                </div>
+                <div class="form-group">
+                    <label for="signature">Signature :</label>
+                    <canvas id="signatureCanvas"></canvas>
+                    <button id="clearSignature">Effacer la signature</button>
+                </div>
+
+                <button type="submit" class="primary-button">Enregistrer</button>
+            </form>
+        </div>
+        <div id="notConnected" style="display: none;">
+            <p>Veuillez vous connecter pour accéder à votre profil.</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+    <script src="profile.js"></script>
+    
+</body>
+</html>

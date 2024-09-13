@@ -456,13 +456,11 @@ function toggleCategory(categoryId) {
 }
 
 function toggleAllSymptoms(categoryId, checked) {
-    const category = CATEGORIES.find(c => c.id === categoryId);
+    const category = document.getElementById(`category-${categoryId}`);
     if (category) {
-        category.symptoms.forEach(symptom => {
-            const checkbox = document.querySelector(`input[name="${categoryId}-${symptom}"]`);
-            if (checkbox) {
-                checkbox.checked = checked;
-            }
+        const checkboxes = category.querySelectorAll('input[type="checkbox"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checked;
         });
         updateReport();
     }
@@ -581,10 +579,13 @@ function resetAll() {
 
 
 function initializeApp() {
-    initializeNavigation();
     
-    if (document.getElementById('categories')) {
-        // Page principale
+    const categoriesElement = document.getElementById('categories');
+    const echoTypeSelect = document.getElementById('echoTypeSelect');
+    const profileForm = document.getElementById('profileForm');
+
+    if (categoriesElement) {
+        // Page principale (index.html)
         initializeTabs();
         initializeFavoriteButtons();
         initializeDropdowns();
@@ -599,27 +600,34 @@ function initializeApp() {
             document.querySelectorAll('input[type="number"]').forEach(input => {
                 input.addEventListener('input', updateMainReport);
             });
-        } else {
-            console.error("L'élément avec l'ID 'categories' n'a pas été trouvé.");
         }
-        
-        if (elements.reportTextArea) {
-            elements.reportTextArea.addEventListener('input', function() {
-                adjustTextareaHeight(this);
-            });
-            adjustTextareaHeight(elements.reportTextArea);
-        }
-    } else if (document.getElementById('echoTypeSelect')) {
-        // Page d'échographie
+    } else if (echoTypeSelect) {
+        // Page d'échographie (echo.html)
         initializeEchoPage();
+    } else if (profileForm) {
+        // Page de profil (profile.html)
+        initializeProfilePage();
     }
     
+    // Ajustement de la hauteur du textarea
+    const reportTextArea = document.getElementById('reportText');
+    if (reportTextArea) {
+        reportTextArea.addEventListener('input', function() {
+            adjustTextareaHeight(this);
+        });
+        adjustTextareaHeight(reportTextArea);
+    }
+
+    // Ajustement de la hauteur du textarea lors du redimensionnement de la fenêtre
     window.addEventListener('resize', () => {
         const textArea = document.getElementById('reportText');
         if (textArea) {
             adjustTextareaHeight(textArea);
         }
     });
+
+    // Initialisation de l'authentification Google
+    initializeGoogleAuth();
 }
 
 function initializeTabs() {
@@ -700,42 +708,123 @@ function generateFavoriteReport(favoriteType) {
     // Le menu se fermera automatiquement grâce au gestionnaire d'événements ajouté dans initializeDropdowns
 }
 
+
 // Event Listeners
-document.addEventListener('DOMContentLoaded', initializeApp);
-document.addEventListener('DOMContentLoaded', initializeEchoPage);
-elements.copyButton.addEventListener('click', copyReport);
-elements.resetButton.addEventListener('click', resetAll);
+document.addEventListener('DOMContentLoaded', () => {
+    initializeApp();
+    initializeEchoPage();
+    initializeNavigation();
+});
 
 function initializeNavigation() {
-    const echoButton = document.getElementById('echoButton');
-    const homeButton = document.getElementById('homeButton');
-    
-    if (echoButton) {
-        echoButton.addEventListener('click', () => {
-            window.location.href = 'echo.html';
+    const menuButton = document.getElementById('menuButton');
+    const menuDropdown = document.getElementById('menuDropdown');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const authButton = document.getElementById('authButton');
+    const profileLink = document.getElementById('profileLink');
+
+    if (menuButton && menuDropdown && menuOverlay) {
+        menuButton.addEventListener('click', function(event) {
+            event.stopPropagation();
+            toggleMenu();
+        });
+
+        menuOverlay.addEventListener('click', closeMenu);
+
+        document.addEventListener('click', function(event) {
+            if (!menuButton.contains(event.target) && !menuDropdown.contains(event.target)) {
+                closeMenu();
+            }
         });
     }
-    
-    if (homeButton) {
-        homeButton.addEventListener('click', () => {
-            window.location.href = 'index.html';
+
+    if (authButton) {
+        authButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleAuth();
         });
+    }
+
+    updateAuthState();
+}
+
+// Assurez-vous que cette ligne est présente
+document.addEventListener('DOMContentLoaded', initializeNavigation);
+
+function toggleMenu() {
+    const menuDropdown = document.getElementById('menuDropdown');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const menuButton = document.getElementById('menuButton');
+
+    const isOpen = menuDropdown.style.display === 'block';
+    menuDropdown.style.display = isOpen ? 'none' : 'block';
+    menuOverlay.style.display = isOpen ? 'none' : 'block';
+    menuButton.setAttribute('aria-expanded', !isOpen);
+}
+
+function closeMenu() {
+    const menuDropdown = document.getElementById('menuDropdown');
+    const menuOverlay = document.querySelector('.menu-overlay');
+    const menuButton = document.getElementById('menuButton');
+
+    menuDropdown.style.display = 'none';
+    menuOverlay.style.display = 'none';
+    menuButton.setAttribute('aria-expanded', 'false');
+}
+
+function handleAuth() {
+    const authButton = document.getElementById('authButton');
+    const isLoggedIn = authButton.textContent === 'Déconnexion';
+
+    if (isLoggedIn) {
+        localStorage.removeItem('userInfo');
+        localStorage.removeItem('userProfile');
+    } else {
+          // Logique de connexion
+        // Pour cet exemple, on simule une connexion réussie
+        localStorage.setItem('userInfo', JSON.stringify({name: 'Utilisateur Test', email: 'test@example.com'}));
+    }
+
+    updateAuthState();
+}
+
+function updateAuthState() {
+    const authButton = document.getElementById('authButton');
+    const profileLink = document.getElementById('profileLink');
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+    if (userInfo) {
+        authButton.textContent = 'Déconnexion';
+        profileLink.style.display = 'block';
+    } else {
+        authButton.textContent = 'Connexion';
+        profileLink.style.display = 'none';
     }
 }
 
+// Ces fonctions restent inchangées
+elements.copyButton.addEventListener('click', copyReport);
+elements.resetButton.addEventListener('click', resetAll);
+
+function startSignIn() {
+    const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
+    const redirectUri = 'http://127.0.0.1:5500/callback.html';
+    const scope = 'email profile';
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
+    window.location.href = authUrl;
+}
 let uploadedImages = [];
 
 function initializeImageUpload() {
     const addImageButton = document.getElementById('addImageButton');
     const fileInput = document.getElementById('imageUpload');
 
-    // Supprimez tout événement existant
-    addImageButton.removeEventListener('click', addImageButtonClickHandler);
-    fileInput.removeEventListener('change', handleFileSelect);
-
-    // Ajoutez les nouveaux écouteurs d'événements
-    addImageButton.addEventListener('click', addImageButtonClickHandler);
-    fileInput.addEventListener('change', handleFileSelect);
+    if (addImageButton && fileInput) {
+        addImageButton.addEventListener('click', addImageButtonClickHandler);
+        fileInput.addEventListener('change', handleFileSelect);
+    } else {
+        console.warn('Elements for image upload not found');
+    }
 }
 
 function addImageButtonClickHandler(event) {
@@ -774,6 +863,10 @@ function generatePDF(lastName, firstName, birthDate) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // Récupérer les informations du profil du médecin et vérifier si l'utilisateur est connecté
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const userProfile = userInfo ? JSON.parse(localStorage.getItem('userProfile')) || {} : {};
+
     const margin = 20;
     const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
@@ -784,7 +877,9 @@ function generatePDF(lastName, firstName, birthDate) {
         if (pageNum > 1) {
             doc.setFontSize(9);
             doc.text(`Patient: ${lastName} ${firstName} - Né(e) le: ${birthDate}`, margin, 10);
-            doc.text(`Dr [Nom du médecin]`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+            if (userInfo) {
+                doc.text(`Dr ${userProfile.name || '[Nom du médecin]'}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+            }
         }
     }
 
@@ -826,11 +921,13 @@ function generatePDF(lastName, firstName, birthDate) {
     // Informations du médecin (colonne droite)
     let rightColumnY = 40;
     const doctorInfoX = margin + columnWidth + 10;
-    rightColumnY = addTextWithOverflow('Dr [Nom du médecin]', doctorInfoX, rightColumnY, { fontSize: 11, fontStyle: 'bold', maxWidth: columnWidth });
-    rightColumnY = addTextWithOverflow('RPPS : [RPPS du médecin]', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-    rightColumnY = addTextWithOverflow('ADELI : [ADELI du médecin]', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-    rightColumnY = addTextWithOverflow('Adresse : [Adresse du médecin]', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-    rightColumnY = addTextWithOverflow('Tél : 05 56 44 74 74', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+    if (userInfo) {
+        rightColumnY = addTextWithOverflow(`Dr ${userProfile.name || '[Nom du médecin]'}`, doctorInfoX, rightColumnY, { fontSize: 11, fontStyle: 'bold', maxWidth: columnWidth });
+        rightColumnY = addTextWithOverflow(`RPPS : ${userProfile.rpps || '[RPPS du médecin]'}`, doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+        rightColumnY = addTextWithOverflow(`ADELI : ${userProfile.adeli || '[ADELI du médecin]'}`, doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+        rightColumnY = addTextWithOverflow(`Adresse : ${userProfile.address || '[Adresse du médecin]'}`, doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+        rightColumnY = addTextWithOverflow('Tél : 05 56 44 74 74', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
+    }
 
     yPosition = Math.max(yPosition, rightColumnY) + 10;
 
@@ -851,28 +948,36 @@ function generatePDF(lastName, firstName, birthDate) {
 
     yPosition += 10;
 
-     // Contenu du rapport
-     const reportContent = document.getElementById('reportText').value;
-     const sections = reportContent.split('\n\n');
- 
-     sections.forEach(section => {
-         const [title, ...content] = section.split('\n');
-         yPosition = addTextWithOverflow(title, margin, yPosition, { fontSize: 11, fontStyle: 'bold' });
-         yPosition += 2;
-         content.forEach(line => {
-             if (line.startsWith('Jambe') || line.startsWith('Rein') || line.includes('CARREFOUR') || line.includes('RÉGION')) {
-                 // Sous-titres
-                 yPosition = addTextWithOverflow(line, margin + 2, yPosition, { fontSize: 10, fontStyle: 'italic' });
-             } else {
-                 yPosition = addTextWithOverflow(line, margin + 5, yPosition, { fontSize: 9 });
-             }
-         });
-         yPosition += 5;
-     });
+    // Contenu du rapport
+    const reportContent = document.getElementById('reportText').value;
+    const sections = reportContent.split('\n\n');
+
+    sections.forEach(section => {
+        const [title, ...content] = section.split('\n');
+        yPosition = addTextWithOverflow(title, margin, yPosition, { fontSize: 11, fontStyle: 'bold' });
+        yPosition += 2;
+        content.forEach(line => {
+            if (line.startsWith('Jambe') || line.startsWith('Rein') || line.includes('CARREFOUR') || line.includes('RÉGION')) {
+                // Sous-titres
+                yPosition = addTextWithOverflow(line, margin + 2, yPosition, { fontSize: 10, fontStyle: 'italic' });
+            } else {
+                yPosition = addTextWithOverflow(line, margin + 5, yPosition, { fontSize: 9 });
+            }
+        });
+        yPosition += 5;
+    });
 
     // Signature du médecin
-    yPosition = addTextWithOverflow('Signature du médecin :', margin, yPosition + 10, { fontSize: 10 });
-    yPosition = addTextWithOverflow('Dr [Nom du médecin]', margin, yPosition + 5, { fontSize: 10 });
+    if (userInfo) {
+        yPosition = addTextWithOverflow('Signature du médecin :', margin, yPosition + 10, { fontSize: 10 });
+       
+        // Ajout de la signature si elle existe
+        if (userProfile.signature) {
+            doc.addImage(userProfile.signature, 'PNG', margin, yPosition + 5, 50, 25);
+        }
+        
+        yPosition = addTextWithOverflow(`Dr ${userProfile.name || '[Nom du médecin]'}`, margin, yPosition + 35, { fontSize: 10 });
+    }
 
     // Pages pour les images
     if (uploadedImages.length > 0) {
@@ -932,8 +1037,14 @@ function generatePDF(lastName, firstName, birthDate) {
 // Mise à jour de l'initialisation pour inclure le gestionnaire d'événements pour le bouton de génération de PDF
 function initializeEchoPage() {
     console.log('Initialisation de la page d\'échographie');
-    initializeImageUpload();
+    
     const echoTypeSelect = document.getElementById('echoTypeSelect');
+    const reportText = document.getElementById('reportText');
+    const copyButton = document.getElementById('copyButton');
+    const resetButton = document.getElementById('resetButton');
+    const addImageButton = document.getElementById('addImageButton');
+    const generatePDFButton = document.getElementById('generatePDFButton');
+
     if (echoTypeSelect) {
         echoTypeSelect.addEventListener('change', function() {
             updateEchoCategories(this.value);
@@ -941,7 +1052,6 @@ function initializeEchoPage() {
         updateEchoCategories(echoTypeSelect.value);
     }
 
-    const reportText = document.getElementById('reportText');
     if (reportText) {
         reportText.addEventListener('input', function() {
             adjustTextareaHeight(this);
@@ -949,27 +1059,25 @@ function initializeEchoPage() {
         adjustTextareaHeight(reportText);
     }
 
-    const copyButton = document.getElementById('copyButton');
     if (copyButton) {
         copyButton.addEventListener('click', copyReport);
     }
 
-    const resetButton = document.getElementById('resetButton');
     if (resetButton) {
         resetButton.addEventListener('click', resetAll);
     }
 
-    const addImageButton = document.getElementById('addImageButton');
-    if (addImageButton) {
-        addImageButton.addEventListener('click', addImage);
+    if (addImageButton && document.getElementById('imageUpload')) {
+        initializeImageUpload();
+    } else {
+        console.log('Elements for image upload not found');
     }
 
-    const generatePDFButton = document.getElementById('generatePDFButton');
     if (generatePDFButton) {
         console.log('Bouton Générer PDF trouvé');
         generatePDFButton.addEventListener('click', showPatientInfoModal);
     } else {
-        console.error('Bouton Générer PDF non trouvé');
+        console.log('Bouton Générer PDF non trouvé');
     }
 
     const confirmPatientInfoButton = document.getElementById('confirmPatientInfo');
@@ -1368,3 +1476,102 @@ function showPatientInfoModal() {
       alert('Veuillez remplir tous les champs.');
     }
   }
+
+  // Ajoutez ceci à votre fichier JavaScript existant
+
+
+// Gestion de la connexion Google
+function onSignIn(googleUser) {
+    const profile = googleUser.getBasicProfile();
+    console.log('ID: ' + profile.getId());
+    console.log('Name: ' + profile.getName());
+    console.log('Image URL: ' + profile.getImageUrl());
+    console.log('Email: ' + profile.getEmail());
+
+    // Mettez à jour l'interface utilisateur
+    document.getElementById('profileLink').textContent = profile.getName();
+    document.getElementById('signOutLink').style.display = 'block';
+    document.querySelector('.g-signin2').style.display = 'none';
+}
+
+function signOut() {
+    const auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(() => {
+        console.log('User signed out.');
+        // Réinitialisez l'interface utilisateur
+        document.getElementById('profileLink').textContent = 'Profil';
+        document.getElementById('signOutLink').style.display = 'none';
+        document.querySelector('.g-signin2').style.display = 'block';
+    });
+}
+
+document.getElementById('signOutLink').addEventListener('click', signOut);
+
+
+function handleCredentialResponse(response) {
+    // Décoder le JWT pour obtenir les informations de l'utilisateur
+    const responsePayload = decodeJwtResponse(response.credential);
+    
+    console.log("ID: " + responsePayload.sub);
+    console.log('Full Name: ' + responsePayload.name);
+    console.log('Given Name: ' + responsePayload.given_name);
+    console.log('Family Name: ' + responsePayload.family_name);
+    console.log("Image URL: " + responsePayload.picture);
+    console.log("Email: " + responsePayload.email);
+
+    // Mettre à jour l'interface utilisateur
+    document.getElementById('profileLink').textContent = responsePayload.name;
+    document.getElementById('signOutLink').style.display = 'block';
+    document.querySelector('.g_id_signin').style.display = 'none';
+}
+
+function decodeJwtResponse(token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}
+
+function signOut() {
+    google.accounts.id.disableAutoSelect();
+    // Réinitialiser l'interface utilisateur
+    document.getElementById('profileLink').textContent = 'Profil';
+    document.getElementById('signOutLink').style.display = 'none';
+    document.querySelector('.g_id_signin').style.display = 'block';
+}
+
+// Initialiser le bouton Google Sign-In
+google.accounts.id.initialize({
+    client_id: '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com',
+    callback: handleCredentialResponse
+});
+google.accounts.id.renderButton(
+    document.getElementById("g_id_signin"),
+    { theme: "outline", size: "large" }
+);
+google.accounts.id.renderButton(
+    document.getElementById("g_id_signin"),
+    { theme: "outline", size: "large" }
+  );
+
+
+function initializeProfilePage() {
+    console.log("Initialisation de la page de profil");
+    // Ajoutez ici la logique spécifique à la page de profil
+    // Par exemple :
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const profileForm = document.getElementById('profileForm');
+    const notConnected = document.getElementById('notConnected');
+
+    if (userInfo) {
+        profileForm.style.display = 'block';
+        document.getElementById('name').value = userInfo.name || '';
+        document.getElementById('email').value = userInfo.email || '';
+        // Ajoutez d'autres champs si nécessaire
+    } else {
+        notConnected.style.display = 'block';
+    }
+}

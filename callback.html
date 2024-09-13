@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SObserv - Authentification</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Authentification en cours...</h1>
+    <div id="status"></div>
+    <div id="debug"></div>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const statusDiv = document.getElementById('status');
+        const debugDiv = document.getElementById('debug');
+        
+        statusDiv.textContent = "Traitement de l'authentification...";
+        debugDiv.innerHTML += "DOMContentLoaded event fired<br>";
+
+        const params = new URLSearchParams(window.location.hash.substr(1));
+        const accessToken = params.get('access_token');
+
+        debugDiv.innerHTML += `Access token: ${accessToken ? "Found" : "Not found"}<br>`;
+
+        if (accessToken) {
+            statusDiv.textContent = "Token d'accès obtenu, récupération des informations de l'utilisateur...";
+            
+            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            })
+            .then(response => {
+                debugDiv.innerHTML += `Fetch response status: ${response.status}<br>`;
+                if (!response.ok) {
+                    throw new Error('Erreur réseau lors de la récupération des informations utilisateur');
+                }
+                return response.json();
+            })
+            .then(data => {
+                debugDiv.innerHTML += `User info received: ${JSON.stringify(data)}<br>`;
+                statusDiv.textContent = "Informations utilisateur récupérées, redirection...";
+                
+                localStorage.setItem('userInfo', JSON.stringify(data));
+                
+                debugDiv.innerHTML += "localStorage updated<br>";
+                
+                setTimeout(() => {
+                    debugDiv.innerHTML += "Redirecting to index.html<br>";
+                    window.location.href = 'index.html';
+                }, 3000); // Redirection après 3 secondes pour laisser le temps de voir les messages de débogage
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                debugDiv.innerHTML += `Error: ${error.message}<br>`;
+                statusDiv.textContent = "Une erreur s'est produite : " + error.message;
+            });
+        } else {
+            console.error('No access token found');
+            debugDiv.innerHTML += "No access token found in URL<br>";
+            statusDiv.textContent = "Échec de l'authentification. Aucun token d'accès trouvé.";
+            
+            setTimeout(() => {
+                debugDiv.innerHTML += "Redirecting to index.html due to error<br>";
+                window.location.href = 'index.html';
+            }, 3000); // Redirection après 3 secondes en cas d'échec
+        }
+    });
+    </script>
+</body>
+</html>
