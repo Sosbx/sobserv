@@ -72,7 +72,7 @@
     <script>
     function startSignIn() {
         const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
-        const redirectUri = 'http://127.0.0.1:5500/callback.html';
+        const redirectUri = 'https://sosbx.github.io/sobserv/callback.html';
         const scope = 'email profile';
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
         window.location.href = authUrl;
@@ -108,7 +108,7 @@
         
         function startSignIn() {
             const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
-            const redirectUri = 'http://127.0.0.1:5500/callback.html';
+            const redirectUri = 'https://sosbx.github.io/sobserv/callback.html';
             const scope = 'email profile';
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
             window.location.href = authUrl;
