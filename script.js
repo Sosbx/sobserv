@@ -874,9 +874,7 @@ function generatePDF(lastName, firstName, birthDate) {
         if (pageNum > 1) {
             doc.setFontSize(9);
             doc.text(`Patient: ${lastName} ${firstName} - Né(e) le: ${birthDate}`, margin, 10);
-            if (userInfo) {
-                doc.text(`Dr ${userProfile.name || '[Nom du médecin]'}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
-            }
+            
         }
     }
 
