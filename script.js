@@ -1,4 +1,5 @@
-
+let canvas;
+let ctx;
 let logoSosmedecins;
 // Chargement du logo
 window.addEventListener('load', function() {
@@ -378,6 +379,20 @@ const elements = {
 
 // Functions
 function generateCategoryHTML(category, isEchoPage = false) {
+    if (category.type === 'input' || category.type === 'textarea') {
+        return `
+            <div class="category" id="category-${category.id}">
+                <div class="category-title">${category.name}</div>
+                <div class="category-content">
+                    ${category.type === 'input' ? 
+                        `<input type="text" id="${category.id}" class="perso-input" placeholder="Entrez le titre de l'échographie" oninput="updateEchoReport()">` :
+                        `<textarea id="${category.id}" class="perso-textarea" placeholder="Entrez le contenu ici" oninput="updateEchoReport()"></textarea>`
+                    }
+                </div>
+            </div>
+        `;
+    }
+
     return `
         <div class="category" id="category-${category.id}">
             <div class="category-title" onclick="toggleCategory(${category.id})">
@@ -393,11 +408,13 @@ function generateCategoryHTML(category, isEchoPage = false) {
                             <div class="symptom-row">
                                 <label>
                                     <input type="checkbox" name="${category.id}-${index}" onchange="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
-                                    ${typeof symptom === 'string' ? symptom : symptom.text}
+                                    <span class="symptom-text">${typeof symptom === 'string' ? symptom : symptom.text}</span>
                                     ${typeof symptom === 'object' && symptom.input ? `
-                                        <input type="number" class="symptom-input" step="0.1" min="0" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
-                                        ${symptom.unit}
-                                        ${symptom.secondInput ? `x <input type="number" class="symptom-input" step="0.1" min="0" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}"> ${symptom.unit}` : ''}
+                                        <span class="symptom-input-container">
+                                            <input type="number" class="symptom-input" step="0.1" min="0" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}">
+                                            ${symptom.unit}
+                                            ${symptom.secondInput ? `x <input type="number" class="symptom-input" step="0.1" min="0" oninput="${isEchoPage ? 'updateEchoReport()' : 'updateMainReport()'}"> ${symptom.unit}` : ''}
+                                        </span>
                                     ` : ''}
                                 </label>
                                 <button class="add-custom-symptom" onclick="addCustomSymptom(this, ${category.id}, ${index}, ${isEchoPage})">+</button>
@@ -567,14 +584,22 @@ function resetAll() {
     document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
         checkbox.checked = false;
     });
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.value = '';
+    });
     elements.reportTextArea.value = '';
     elements.copyButton.classList.remove('copied');
     elements.copyButton.textContent = 'Copier le rapport';
-    updateReport();
 
+    // Fermer toutes les catégories déployées
     document.querySelectorAll('.category.open').forEach(category => {
         category.classList.remove('open');
     });
+
+    // Réinitialiser la taille de la zone de texte
+    elements.reportTextArea.style.height = 'auto';
+
+    updateReport();
 }
 
 
@@ -582,10 +607,12 @@ function initializeApp() {
     
     const categoriesElement = document.getElementById('categories');
     const echoTypeSelect = document.getElementById('echoTypeSelect');
-    const profileForm = document.getElementById('profileForm');
+    const isEchoPage = !!document.getElementById('echoTypeSelect');
 
-    if (categoriesElement) {
-        // Page principale (index.html)
+    if (isEchoPage) {
+        initializeEchoPage();
+    } else {
+        // Initialisation pour la page principale
         initializeTabs();
         initializeFavoriteButtons();
         initializeDropdowns();
@@ -601,14 +628,32 @@ function initializeApp() {
                 input.addEventListener('input', updateMainReport);
             });
         }
+    }
+
+    if (categoriesElement) {
+        // Page principale (index.html)
+        initializeTabs();
+        initializeFavoriteButtons();
+        initializeDropdowns();
+       
+        
+        if (elements.categoriesContainer) {
+            elements.categoriesContainer.innerHTML = CATEGORIES.map(category => generateCategoryHTML(category, false)).join('');
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateMainReport);
+            });
+            
+            document.querySelectorAll('input[type="number"]').forEach(input => {
+                input.addEventListener('input', updateMainReport);
+            });
+        }
     } else if (echoTypeSelect) {
         // Page d'échographie (echo.html)
         initializeEchoPage();
-    } else if (profileForm) {
-        // Page de profil (profile.html)
-        initializeProfilePage();
-    }
     
+    }
+   
     // Ajustement de la hauteur du textarea
     const reportTextArea = document.getElementById('reportText');
     if (reportTextArea) {
@@ -625,9 +670,6 @@ function initializeApp() {
             adjustTextareaHeight(textArea);
         }
     });
-
-    // Initialisation de l'authentification Google
-    initializeGoogleAuth();
 }
 
 function initializeTabs() {
@@ -720,8 +762,6 @@ function initializeNavigation() {
     const menuButton = document.getElementById('menuButton');
     const menuDropdown = document.getElementById('menuDropdown');
     const menuOverlay = document.querySelector('.menu-overlay');
-    const authButton = document.getElementById('authButton');
-    const profileLink = document.getElementById('profileLink');
 
     if (menuButton && menuDropdown && menuOverlay) {
         menuButton.addEventListener('click', function(event) {
@@ -736,16 +776,9 @@ function initializeNavigation() {
                 closeMenu();
             }
         });
+    } else {
+        console.error('Éléments de navigation manquants');
     }
-
-    if (authButton) {
-        authButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            handleAuth();
-        });
-    }
-
-    updateAuthState();
 }
 
 // Assurez-vous que cette ligne est présente
@@ -756,10 +789,10 @@ function toggleMenu() {
     const menuOverlay = document.querySelector('.menu-overlay');
     const menuButton = document.getElementById('menuButton');
 
-    const isOpen = menuDropdown.style.display === 'block';
-    menuDropdown.style.display = isOpen ? 'none' : 'block';
-    menuOverlay.style.display = isOpen ? 'none' : 'block';
-    menuButton.setAttribute('aria-expanded', !isOpen);
+    menuDropdown.classList.toggle('show');
+    menuOverlay.classList.toggle('show');
+    const isOpen = menuDropdown.classList.contains('show');
+    menuButton.setAttribute('aria-expanded', isOpen);
 }
 
 function closeMenu() {
@@ -767,52 +800,16 @@ function closeMenu() {
     const menuOverlay = document.querySelector('.menu-overlay');
     const menuButton = document.getElementById('menuButton');
 
-    menuDropdown.style.display = 'none';
-    menuOverlay.style.display = 'none';
+    menuDropdown.classList.remove('show');
+    menuOverlay.classList.remove('show');
     menuButton.setAttribute('aria-expanded', 'false');
 }
 
-function handleAuth() {
-    const authButton = document.getElementById('authButton');
-    const isLoggedIn = authButton.textContent === 'Déconnexion';
-
-    if (isLoggedIn) {
-        localStorage.removeItem('userInfo');
-        localStorage.removeItem('userProfile');
-    } else {
-          // Logique de connexion
-        // Pour cet exemple, on simule une connexion réussie
-        localStorage.setItem('userInfo', JSON.stringify({name: 'Utilisateur Test', email: 'test@example.com'}));
-    }
-
-    updateAuthState();
-}
-
-function updateAuthState() {
-    const authButton = document.getElementById('authButton');
-    const profileLink = document.getElementById('profileLink');
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-
-    if (userInfo) {
-        authButton.textContent = 'Déconnexion';
-        profileLink.style.display = 'block';
-    } else {
-        authButton.textContent = 'Connexion';
-        profileLink.style.display = 'none';
-    }
-}
 
 // Ces fonctions restent inchangées
 elements.copyButton.addEventListener('click', copyReport);
 elements.resetButton.addEventListener('click', resetAll);
 
-function startSignIn() {
-    const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
-    const redirectUri = 'http://127.0.0.1:5500/callback.html';
-    const scope = 'email profile';
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
-    window.location.href = authUrl;
-}
 let uploadedImages = [];
 
 function initializeImageUpload() {
@@ -863,9 +860,9 @@ function generatePDF(lastName, firstName, birthDate) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Récupérer les informations du profil du médecin et vérifier si l'utilisateur est connecté
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    const userProfile = userInfo ? JSON.parse(localStorage.getItem('userProfile')) || {} : {};
+    // Récupérer les informations du médecin
+    const savedInfo = localStorage.getItem('doctorInfo');
+    const doctorInfo = savedInfo ? JSON.parse(savedInfo) : {};
 
     const margin = 20;
     const pageWidth = doc.internal.pageSize.width;
@@ -918,23 +915,22 @@ function generatePDF(lastName, firstName, birthDate) {
     yPosition = addTextWithOverflow(`Prénom : ${firstName}`, margin, yPosition + 3, { fontSize: 10, maxWidth: columnWidth });
     yPosition = addTextWithOverflow(`Date de naissance : ${birthDate}`, margin, yPosition + 3, { fontSize: 10, maxWidth: columnWidth });
 
-    // Informations du médecin (colonne droite)
-    let rightColumnY = 40;
-    const doctorInfoX = margin + columnWidth + 10;
-    if (userInfo) {
-        rightColumnY = addTextWithOverflow(`Dr ${userProfile.name || '[Nom du médecin]'}`, doctorInfoX, rightColumnY, { fontSize: 11, fontStyle: 'bold', maxWidth: columnWidth });
-        rightColumnY = addTextWithOverflow(`RPPS : ${userProfile.rpps || '[RPPS du médecin]'}`, doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-        rightColumnY = addTextWithOverflow(`ADELI : ${userProfile.adeli || '[ADELI du médecin]'}`, doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-        rightColumnY = addTextWithOverflow(`Adresse : ${userProfile.address || '[Adresse du médecin]'}`, doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-        rightColumnY = addTextWithOverflow('Tél : 05 56 44 74 74', doctorInfoX, rightColumnY + 3, { fontSize: 10, maxWidth: columnWidth });
-    }
+      // Informations du médecin (colonne droite)
+    const doctorInfoX = pageWidth - margin;
+    doc.setFontSize(11);
+    doc.setFont(undefined, 'bold');
+    doc.text(`Dr ${doctorInfo.name || '[Nom du médecin]'}`, doctorInfoX, 40, { align: 'right' });
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text(`RPPS : ${doctorInfo.rpps || '[RPPS du médecin]'}`, doctorInfoX, 50, { align: 'right' });
 
-    yPosition = Math.max(yPosition, rightColumnY) + 10;
+    yPosition += 10; // Saut de ligne avant le titre
 
     // Titre du rapport
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.text('Compte rendu d\'échographie', pageWidth / 2, yPosition, { align: 'center' });
+
 
     yPosition += 10;
 
@@ -967,18 +963,11 @@ function generatePDF(lastName, firstName, birthDate) {
         yPosition += 5;
     });
 
-    // Signature du médecin
-    if (userInfo) {
-        yPosition = addTextWithOverflow('Signature du médecin :', margin, yPosition + 10, { fontSize: 10 });
-       
-        // Ajout de la signature si elle existe
-        if (userProfile.signature) {
-            doc.addImage(userProfile.signature, 'PNG', margin, yPosition + 5, 50, 25);
-        }
-        
-        yPosition = addTextWithOverflow(`Dr ${userProfile.name || '[Nom du médecin]'}`, margin, yPosition + 35, { fontSize: 10 });
+    // Ajout de la signature et du nom du médecin à la fin
+    yPosition = addTextWithOverflow(`Dr ${doctorInfo.name || '[Nom du médecin]'}`, margin, yPosition + 10, { fontSize: 10, fontStyle: 'bold' });
+    if (doctorInfo.signature) {
+        doc.addImage(doctorInfo.signature, 'PNG', margin, yPosition + 5, 50, 25);
     }
-
     // Pages pour les images
     if (uploadedImages.length > 0) {
         const pageWidth = doc.internal.pageSize.width;
@@ -1099,9 +1088,10 @@ function initializeEchoPage() {
         });
     }
 
+    initializeDoctorInfoSection();
+    initializeNavigation();
     console.log('Initialisation de la page d\'échographie terminée');
 }
-
 
 function updateEchoCategories(echoType) {
     const echoCategoriesContainer = document.getElementById('echo-categories');
@@ -1122,64 +1112,88 @@ function updateEchoReport() {
     let report = "";
     
     if (selectedEcho) {
-        selectedEcho.categories.forEach(category => {
-            let categoryReport = "";
-            let hasContent = false;
-            let currentSubtitle = "";
-
-            const categoryElement = document.getElementById(`category-${category.id}`);
-            const symptomRows = categoryElement.querySelectorAll('.symptom-row');
-
-            symptomRows.forEach((row) => {
-                const checkbox = row.querySelector('input[type="checkbox"]');
-                if (checkbox && checkbox.checked) {
-                    if (!hasContent) {
-                        categoryReport += `${category.name}:\n`;
-                        hasContent = true;
-                    }
-
-                    if (row.classList.contains('custom-symptom-row')) {
-                        const textInput = row.querySelector('.custom-symptom-input');
-                        if (textInput && textInput.value.trim()) {
-                            categoryReport += `- ${textInput.value.trim()}\n`;
-                        }
-                    } else {
-                        let symptomText = row.textContent.trim();
-                        // Supprime le symbole '+' à la fin du texte s'il existe
-                        symptomText = symptomText.replace(/\+$/, '').trim();
-                        
-                        if (symptomText.startsWith('Rein') || symptomText.startsWith('Vessie')) {
-                            currentSubtitle = symptomText;
-                        } else {
-                            if (currentSubtitle) {
-                                categoryReport += `${currentSubtitle}\n`;
-                                currentSubtitle = "";
-                            }
-                            const inputs = row.querySelectorAll('input[type="number"]');
-                            if (inputs.length > 0) {
-                                let symptomText = `- ${row.textContent.split(':')[0].trim()}: `;
-                                symptomText += inputs[0].value + (inputs[1] ? ` x ${inputs[1].value}` : '') + ' cm';
-                                categoryReport += symptomText + '\n';
-                            } else {
-                                categoryReport += `- ${symptomText}\n`;
-                            }
-                        }
+        if (echoType === 'perso') {
+            const title = document.getElementById('perso-title').value;
+            report += `Échographie : ${title}\n\n`;
+            
+            selectedEcho.categories.forEach(category => {
+                if (category.id !== 'perso-title') {
+                    const content = document.getElementById(category.id).value;
+                    if (content.trim()) {
+                        report += `${category.name}:\n${content}\n\n`;
                     }
                 }
             });
+        } else {
+            selectedEcho.categories.forEach(category => {
+                let categoryReport = "";
+                let hasContent = false;
+                let currentSubtitle = "";
 
-            if (categoryReport) {
-                report += categoryReport.trim() + '\n\n'; // Ajoute un double saut de ligne entre les catégories
-            }
-        });
+                const categoryElement = document.getElementById(`category-${category.id}`);
+                const allElements = categoryElement.querySelectorAll('.symptom-row, .symptom-subtitle');
+
+                allElements.forEach((element) => {
+                    if (element.classList.contains('symptom-subtitle')) {
+                        // C'est un sous-titre, on le stocke pour une utilisation ultérieure
+                        currentSubtitle = element.textContent.trim();
+                    } else {
+                        // C'est une ligne de symptôme
+                        const checkbox = element.querySelector('input[type="checkbox"]');
+                        if (checkbox && checkbox.checked) {
+                            if (!hasContent) {
+                                categoryReport += `${category.name}:\n`;
+                                hasContent = true;
+                            }
+
+                            // Ajouter le sous-titre si nécessaire
+                            if (currentSubtitle) {
+                                categoryReport += `\n${currentSubtitle}\n`;
+                                currentSubtitle = ""; // Réinitialiser pour ne pas le répéter
+                            }
+
+                            if (element.classList.contains('custom-symptom-row')) {
+                                const textInput = element.querySelector('.custom-symptom-input');
+                                if (textInput && textInput.value.trim()) {
+                                    categoryReport += `- ${textInput.value.trim()}\n`;
+                                }
+                            } else {
+                                const symptomText = element.querySelector('.symptom-text').textContent.trim();
+                                const inputs = element.querySelectorAll('input[type="number"]');
+                                if (inputs.length > 0) {
+                                    let inputText = `- ${symptomText}: `;
+                                    if (inputs.length === 2) {
+                                        inputText += `${inputs[0].value} x ${inputs[1].value} cm`;
+                                    } else {
+                                        inputText += `${inputs[0].value} ${symptomText.includes('mm') ? 'mm' : 'cm'}`;
+                                    }
+                                    categoryReport += `${inputText}\n`;
+                                } else {
+                                    categoryReport += `- ${symptomText}\n`;
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (categoryReport) {
+                    report += categoryReport.trim() + '\n\n';
+                }
+            });
+        }
     }
     
     const reportText = document.getElementById('reportText');
     if (reportText) {
-        reportText.value = report.trim(); // Supprime les espaces superflus au début et à la fin
+        reportText.value = report.trim();
         adjustTextareaHeight(reportText);
     }
 }
+
+
+
+
+
 
 function copyEchoReport() {
     const echoReport = document.getElementById('echoReportText').value;
@@ -1451,6 +1465,37 @@ const ECHO_TYPES = {
                 ]
             }
         ]
+    },
+
+    'perso': {
+        name: 'Échographie Perso',
+        categories: [
+            {
+                id: 'perso-title',
+                name: 'Titre',
+                type: 'input'
+            },
+            {
+                id: 'perso-indication',
+                name: 'INDICATION',
+                type: 'textarea'
+            },
+            {
+                id: 'perso-technique',
+                name: 'TECHNIQUE',
+                type: 'textarea'
+            },
+            {
+                id: 'perso-resultats',
+                name: 'RÉSULTATS',
+                type: 'textarea'
+            },
+            {
+                id: 'perso-conclusion',
+                name: 'CONCLUSION',
+                type: 'textarea'
+            }
+        ]
     }
 };
 
@@ -1477,101 +1522,99 @@ function showPatientInfoModal() {
     }
   }
 
-  // Ajoutez ceci à votre fichier JavaScript existant
 
+let isDrawing = false;
 
-// Gestion de la connexion Google
-function onSignIn(googleUser) {
-    const profile = googleUser.getBasicProfile();
-    console.log('ID: ' + profile.getId());
-    console.log('Name: ' + profile.getName());
-    console.log('Image URL: ' + profile.getImageUrl());
-    console.log('Email: ' + profile.getEmail());
+function initializeDoctorInfoSection() {
+    canvas = document.getElementById('signatureCanvas');
+    if (canvas) {
+        ctx = canvas.getContext('2d');
+        
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
 
-    // Mettez à jour l'interface utilisateur
-    document.getElementById('profileLink').textContent = profile.getName();
-    document.getElementById('signOutLink').style.display = 'block';
-    document.querySelector('.g-signin2').style.display = 'none';
-}
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
 
-function signOut() {
-    const auth2 = gapi.auth2.getAuthInstance();
-    auth2.signOut().then(() => {
-        console.log('User signed out.');
-        // Réinitialisez l'interface utilisateur
-        document.getElementById('profileLink').textContent = 'Profil';
-        document.getElementById('signOutLink').style.display = 'none';
-        document.querySelector('.g-signin2').style.display = 'block';
-    });
-}
-
-document.getElementById('signOutLink').addEventListener('click', signOut);
-
-
-function handleCredentialResponse(response) {
-    // Décoder le JWT pour obtenir les informations de l'utilisateur
-    const responsePayload = decodeJwtResponse(response.credential);
-    
-    console.log("ID: " + responsePayload.sub);
-    console.log('Full Name: ' + responsePayload.name);
-    console.log('Given Name: ' + responsePayload.given_name);
-    console.log('Family Name: ' + responsePayload.family_name);
-    console.log("Image URL: " + responsePayload.picture);
-    console.log("Email: " + responsePayload.email);
-
-    // Mettre à jour l'interface utilisateur
-    document.getElementById('profileLink').textContent = responsePayload.name;
-    document.getElementById('signOutLink').style.display = 'block';
-    document.querySelector('.g_id_signin').style.display = 'none';
-}
-
-function decodeJwtResponse(token) {
-    var base64Url = token.split('.')[1];
-    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-
-    return JSON.parse(jsonPayload);
-}
-
-function signOut() {
-    google.accounts.id.disableAutoSelect();
-    // Réinitialiser l'interface utilisateur
-    document.getElementById('profileLink').textContent = 'Profil';
-    document.getElementById('signOutLink').style.display = 'none';
-    document.querySelector('.g_id_signin').style.display = 'block';
-}
-
-// Initialiser le bouton Google Sign-In
-google.accounts.id.initialize({
-    client_id: '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com',
-    callback: handleCredentialResponse
-});
-google.accounts.id.renderButton(
-    document.getElementById("g_id_signin"),
-    { theme: "outline", size: "large" }
-);
-google.accounts.id.renderButton(
-    document.getElementById("g_id_signin"),
-    { theme: "outline", size: "large" }
-  );
-
-
-function initializeProfilePage() {
-    console.log("Initialisation de la page de profil");
-    // Ajoutez ici la logique spécifique à la page de profil
-    // Par exemple :
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    const profileForm = document.getElementById('profileForm');
-    const notConnected = document.getElementById('notConnected');
-
-    if (userInfo) {
-        profileForm.style.display = 'block';
-        document.getElementById('name').value = userInfo.name || '';
-        document.getElementById('email').value = userInfo.email || '';
-        // Ajoutez d'autres champs si nécessaire
+        document.getElementById('clearSignature').addEventListener('click', clearSignature);
     } else {
-        notConnected.style.display = 'block';
+        console.error('Canvas element not found');
+    }
+
+    const saveButton = document.getElementById('saveDoctorInfo');
+    if (saveButton) {
+        saveButton.addEventListener('click', saveDoctorInfo);
+    } else {
+        console.error('Save button not found');
+    }
+
+    loadDoctorInfo();
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    draw(e);
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    
+    const rect = canvas.getBoundingClientRect();
+    let x, y;
+    
+    if (e.type === 'mousemove') {
+        x = e.clientX - rect.left;
+        y = e.clientY - rect.top;
+    } else if (e.type === 'touchmove') {
+        x = e.touches[0].clientX - rect.left;
+        y = e.touches[0].clientY - rect.top;
+    }
+
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+}
+
+function stopDrawing() {
+    isDrawing = false;
+    ctx.beginPath();
+}
+
+function clearSignature() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function saveDoctorInfo() {
+    const doctorInfo = {
+        name: document.getElementById('doctorName').value,
+        rpps: document.getElementById('doctorRPPS').value,
+        signature: canvas.toDataURL()
+    };
+    localStorage.setItem('doctorInfo', JSON.stringify(doctorInfo));
+    alert('Informations du médecin sauvegardées');
+}
+
+function loadDoctorInfo() {
+    const savedInfo = localStorage.getItem('doctorInfo');
+    if (savedInfo) {
+        const doctorInfo = JSON.parse(savedInfo);
+        document.getElementById('doctorName').value = doctorInfo.name;
+        document.getElementById('doctorRPPS').value = doctorInfo.rpps;
+        
+        const img = new Image();
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0);
+        }
+        img.src = doctorInfo.signature;
     }
 }
+
+// Appelez cette fonction au chargement de la page
+document.addEventListener('DOMContentLoaded', initializeDoctorInfoSection);

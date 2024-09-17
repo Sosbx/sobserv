@@ -16,10 +16,7 @@
     <nav id="menuDropdown" class="menu-dropdown" aria-label="Menu principal">
         <a href="index.html" class="menu-item">Observations</a>
         <a href="echo.html" class="menu-item">Échographie</a>
-        <a href="profile.html" id="profileLink" class="menu-item">Profil</a>
-        <a href="#" id="authButton" class="menu-item">Connexion</a>
     </nav>
-    </div>
 
     <h1 id="sobserv" class="title">SObserv - Échographie</h1>
 
@@ -33,20 +30,30 @@
             </select>
             <div id="echo-categories" class="categories-container"></div>
         </div>
-
+        
         <div class="report-section">
-            <textarea id="reportText" placeholder="Le rapport s'affichera ici..."></textarea>
+            <textarea id="reportText"></textarea>
             <div class="buttons-container">
                 <button id="copyButton">Copier le rapport</button>
                 <button id="resetButton">Réinitialiser</button>
-            </div>
-            <div class="image-upload-section">
-                <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
-            </div>
-            <div class="additional-buttons">
-                <button id="addImageButton">Ajouter une image</button>
-                <div id="uploadedImagesList"></div>
                 <button id="generatePDFButton">Générer PDF</button>
+            </div>
+            <div id="doctorInfoSection" class="doctor-info-section">
+                <h3>Informations du médecin</h3>
+                <div class="form-group">
+                    <label for="doctorName">Nom complet :</label>
+                    <input type="text" id="doctorName" name="doctorName">
+                </div>
+                <div class="form-group">
+                    <label for="doctorRPPS">RPPS :</label>
+                    <input type="text" id="doctorRPPS" name="doctorRPPS">
+                </div>
+                <div class="form-group">
+                    <label for="signatureCanvas">Signature :</label>
+                    <canvas id="signatureCanvas" width="300" height="150"></canvas>
+                    <button id="clearSignature" type="button">Effacer la signature</button>
+                </div>
+                <button id="saveDoctorInfo" type="button">Enregistrer les informations</button>
             </div>
         </div>
     </div>
@@ -66,72 +73,6 @@
     </div>
 
     <script src="script.js"></script>
-    <script>
-    function startSignIn() {
-        const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
-        const redirectUri = 'https://sosbx.github.io/sobserv/callback.html';
-        const scope = 'email profile';
-        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
-        window.location.href = authUrl;
-    }
 
-    // Vérifiez si l'utilisateur est connecté au chargement de la page
-    document.addEventListener('DOMContentLoaded', function() {
-        const userInfo = localStorage.getItem('userInfo');
-        if (userInfo) {
-            const user = JSON.parse(userInfo);
-            document.getElementById('profileLink').textContent = user.name;
-            document.getElementById('signOutLink').style.display = 'block';
-        }
-    });
-
-    // Fonction de déconnexion
-    document.getElementById('signOutLink').addEventListener('click', function(e) {
-        e.preventDefault();
-        localStorage.removeItem('userInfo');
-        document.getElementById('profileLink').textContent = 'Profil';
-        this.style.display = 'none';
-        alert('Vous avez été déconnecté.');
-    });
-    </script>
-    <script>
-        function handleAuth() {
-            const userInfo = localStorage.getItem('userInfo');
-            if (userInfo) {
-                // L'utilisateur est connecté, on le déconnecte
-                localStorage.removeItem('userInfo');
-                updateAuthButton();
-                alert('Vous avez été déconnecté.');
-            } else {
-                // L'utilisateur n'est pas connecté, on lance la connexion
-                startSignIn();
-            }
-        }
-        
-        function updateAuthButton() {
-            const authButton = document.getElementById('authButton');
-            const profileLink = document.getElementById('profileLink');
-            const userInfo = localStorage.getItem('userInfo');
-            if (userInfo) {
-                const user = JSON.parse(userInfo);
-                authButton.textContent = `Déconnexion (${user.name})`;
-                profileLink.style.display = 'block';
-            } else {
-                authButton.textContent = 'Connexion Google';
-                profileLink.style.display = 'none';
-            }
-        }
-        
-        function startSignIn() {
-            const clientId = '182475585314-dbratp3otrkoblugg5gnqdaetdedqps6.apps.googleusercontent.com';
-            const redirectUri = 'https://sosbx.github.io/sobserv/callback.html';
-            const scope = 'email profile';
-            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}`;
-            window.location.href = authUrl;
-        }
-        
-        // Mettre à jour le bouton au chargement de la page
-        document.addEventListener('DOMContentLoaded', updateAuthButton);
-        </script>
 </body>
 </html>

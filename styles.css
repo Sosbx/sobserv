@@ -742,6 +742,11 @@ button {
     overflow: hidden;
 }
 
+.menu-dropdown.show,
+.menu-overlay.show {
+    display: block;
+}
+
 .menu-dropdown a {
     display: block;
     padding: 12px 20px;
@@ -783,4 +788,86 @@ button {
 .title {
     text-align: center;
     padding-top: 60px;
+}
+
+
+.doctor-info-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: var(--indigo-50);
+    border-radius: 8px;
+}
+
+.doctor-info-section h3 {
+    margin-top: 0;
+    color: var(--indigo-800);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--indigo-700);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--indigo-300);
+    border-radius: 4px;
+}
+
+#signatureCanvas {
+    border: 1px solid var(--indigo-300);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+#clearSignature, #saveDoctorInfo {
+    background-color: var(--indigo-500);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#clearSignature:hover, #saveDoctorInfo:hover {
+    background-color: var(--indigo-600);
+}
+
+.perso-input, .perso-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--indigo-300);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.perso-textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.perso-input:focus, .perso-textarea:focus {
+    outline: none;
+    border-color: var(--indigo-500);
+    box-shadow: 0 0 0 2px var(--indigo-200);
+}
+
+.doctor-info-section {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.doctor-info-section input,
+.doctor-info-section canvas {
+    width: 100%;
+    max-width: 300px;
 }
