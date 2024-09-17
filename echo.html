@@ -27,15 +27,23 @@
                 <option value="pleuropulmonaire">Échographie pleuro-pulmonaire</option>
                 <option value="tvp">Écho-Doppler des veines des membres inférieurs</option>
                 <option value="fast">FAST ÉCHO</option>
+                <option value="perso">Échographie Personnalisée</option>
             </select>
             <div id="echo-categories" class="categories-container"></div>
         </div>
         
         <div class="report-section">
-            <textarea id="reportText"></textarea>
+            <textarea id="reportText" placeholder="Le rapport s'affichera ici..."></textarea>
             <div class="buttons-container">
                 <button id="copyButton">Copier le rapport</button>
                 <button id="resetButton">Réinitialiser</button>
+                </div>
+                <div class="image-upload-section">
+                    <input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+                </div>
+                <div class="additional-buttons">
+                    <button id="addImageButton">Ajouter une image</button>
+                    <div id="uploadedImagesList"></div>
                 <button id="generatePDFButton">Générer PDF</button>
             </div>
             <div id="doctorInfoSection" class="doctor-info-section">
